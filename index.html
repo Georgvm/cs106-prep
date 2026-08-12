@@ -364,6 +364,8 @@
     box-shadow:0 4px 0 var(--green-edge);
   }
   .profile-head h2{margin:0; font-size:22px; font-weight:900}
+  .editnick{font-size:15px; opacity:.55; transition:opacity .15s; vertical-align:2px}
+  .editnick:hover{opacity:1}
   .profile-head p{margin:2px 0 0; color:var(--ink-soft); font-size:13.5px}
   .sec-label{font-size:12px; font-weight:900; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); margin:20px 4px 8px}
   .stats-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
@@ -416,7 +418,7 @@
     </div>
     <p class="gate-err" id="gate-err"></p>
     <button class="btn btn-green" id="gate-btn" onclick="trySignIn()">Start learning</button>
-    <p class="fine">Your nickname, email, and study activity are saved so we can see how the app is used. Lesson progress stays on this device.</p>
+    <p class="fine">Your account is tied to your email — sign in on any device and your progress follows. Your name, email, and study activity are saved so we can see how the app is used.</p>
   </div>
 </div>
 
@@ -2147,7 +2149,10 @@ delete S.xp; delete S.streakDays;
 if(!Array.isArray(S.missed)) S.missed = [];
 if(typeof S.done !== "object" || !S.done) S.done = {};
 if(typeof S.gems !== "number" || !isFinite(S.gems)) S.gems = 0;
-function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
+function save(){
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){}
+  if(typeof pushState === "function") pushState();
+}
 
 // When the course content changes shape, old lesson indexes and missed
 // questions point at the wrong material — reset path progress, keep
@@ -2173,18 +2178,34 @@ function track(event, props){
     }).catch(()=>{});
   }catch(e){}
 }
-function registerUser(u){
-  if(!SUPA_URL || !SUPA_KEY) return;
-  try{
-    // plain insert: a duplicate email answers 409, which we ignore —
-    // the RLS insert-only policy rejects PostgREST's upsert path
-    fetch(SUPA_URL+"/rest/v1/app_users", {
-      method:"POST", keepalive:true,
-      headers:{ "apikey":SUPA_KEY, "Authorization":"Bearer "+SUPA_KEY,
-                "Content-Type":"application/json", "Prefer":"return=minimal" },
-      body: JSON.stringify({ nick:u.nick, email:u.email })
-    }).catch(()=>{});
-  }catch(e){}
+/* Accounts: the email IS the account (server-side). sync_user returns the
+   original nick + synced progress for an existing account; save_state
+   pushes progress after every change (debounced). */
+function syncUser(u){
+  if(!SUPA_URL || !SUPA_KEY) return Promise.resolve(null);
+  return fetch(SUPA_URL+"/rest/v1/rpc/sync_user", {
+    method:"POST",
+    headers:{ "apikey":SUPA_KEY, "Authorization":"Bearer "+SUPA_KEY,
+              "Content-Type":"application/json" },
+    body: JSON.stringify({ p_email:u.email, p_nick:u.nick })
+  }).then(r => r.ok ? r.json() : null).catch(()=>null);
+}
+let pushTimer = null;
+function pushState(){
+  if(!SUPA_URL || !SUPA_KEY || !S.user) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(()=>{
+    if(!S.user) return;
+    try{
+      fetch(SUPA_URL+"/rest/v1/rpc/save_state", {
+        method:"POST", keepalive:true,
+        headers:{ "apikey":SUPA_KEY, "Authorization":"Bearer "+SUPA_KEY,
+                  "Content-Type":"application/json" },
+        body: JSON.stringify({ p_email:S.user.email, p_nick:S.user.nick,
+          p_state:{ done:S.done, gems:S.gems, missed:S.missed } })
+      }).catch(()=>{});
+    }catch(e){}
+  }, 1200);
 }
 
 /* ============ SIGN-IN ============ */
@@ -2202,15 +2223,35 @@ function trySignIn(){
     $("email").classList.add("bad"); $("email").focus(); return;
   }
   err.textContent = "";
-  S.user = { nick, email };
+  const em = email.toLowerCase();
+  if(S.accountEmail && S.accountEmail !== em){
+    // different account on this device — don't carry the old progress over
+    S.done = {}; S.gems = 0; S.missed = [];
+  }
+  S.user = { nick, email: em };
+  S.accountEmail = em;
   save();
-  registerUser(S.user);
   track("sign_in", { nick });
   $("gate").classList.remove("open");
   // iOS scrolls the page behind the overlay while the keyboard is up;
   // snap back so the app doesn't open half-scrolled
   window.scrollTo(0, 0);
   renderAll();
+  // email is the account: an existing account's original nick and synced
+  // progress win over whatever was typed on this device
+  syncUser(S.user).then(res=>{
+    if(!res || !S.user) return;
+    if(res.existing){
+      if(res.nick) S.user.nick = res.nick;
+      const st = res.state;
+      if(st && typeof st === "object"){
+        if(st.done && typeof st.done === "object") S.done = st.done;
+        if(typeof st.gems === "number" && isFinite(st.gems)) S.gems = st.gems;
+        if(Array.isArray(st.missed)) S.missed = st.missed;
+      }
+    }
+    save(); renderAll();
+  });
 }
 function signOut(){
   if(!confirm("Sign out? Your progress stays saved on this device.")) return;
@@ -2364,7 +2405,9 @@ function renderProfile(){
   $("tab-profile").innerHTML =
     '<div class="profile-head">'+
       '<div class="avatar">'+esc((u.nick||"?").trim().charAt(0).toUpperCase())+'</div>'+
-      '<div><h2 style="user-select:none; cursor:default" onclick="nickTap()">'+esc(u.nick)+'</h2><p>'+esc(u.email)+'</p></div>'+
+      '<div><h2 style="user-select:none; cursor:default" onclick="nickTap()">'+esc(u.nick)+
+      ' <button class="editnick" onclick="editNick(event)" aria-label="Edit name" title="Edit name">✏️</button></h2>'+
+      '<p>'+esc(u.email)+'</p></div>'+
     '</div>'+
     '<div class="sec-label">Your stats</div>'+
     '<div class="stats-grid">'+
@@ -2377,6 +2420,18 @@ function renderProfile(){
     '<div class="meter-cap"><span>'+pct+'% of the path</span><span>'+esc(EXAM.when)+'</span></div></div>'+
     '<button class="btn btn-ghost" style="margin-top:22px" onclick="signOut()">Sign out</button>'+
     '<button class="btn btn-ghost" id="resetbtn" style="margin-top:10px; color:var(--red)" onclick="resetAll()" hidden>Reset all progress</button>';
+}
+function editNick(e){
+  e.stopPropagation();
+  if(!S.user) return;
+  const v = prompt("New display name (max 20 characters):", S.user.nick);
+  if(v === null) return;
+  const nick = v.trim().slice(0, 20);
+  if(!nick) return;
+  S.user.nick = nick;
+  save();  // pushState also updates the name on the server
+  track("nick_change", { nick });
+  renderAll();
 }
 // Hidden escape hatch: tapping the profile name 10 times in quick
 // succession reveals the reset button for 10 seconds.
