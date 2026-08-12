@@ -1,0 +1,2570 @@
+<title>CS 106EA Prep</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  /* ============ TOKENS ============ */
+  :root{
+    --green:#58cc02; --green-edge:#46a302; --green-soft:#d7ffb8;
+    --blue:#1cb0f6; --blue-edge:#1899d6; --blue-soft:#ddf4ff;
+    --gold:#ffc800; --gold-edge:#e0a500;
+    --red:#ff4b4b; --red-edge:#ea2b2b; --red-soft:#ffdfe0;
+    --purple:#ce82ff; --purple-edge:#a568cc;
+    --bg:#ffffff; --bg-raise:#ffffff; --line:#e5e5e5;
+    --ink:#3c3c3c; --ink-soft:#777777; --ink-faint:#afafaf;
+    --locked:#e5e5e5; --locked-edge:#cfcfcf; --locked-ink:#afafaf;
+    --ok-bg:#d7ffb8; --ok-ink:#58a700;
+    --bad-bg:#ffdfe0; --bad-ink:#ea2b2b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --green:#58cc02; --green-edge:#46a302; --green-soft:#20380b;
+      --blue:#1cb0f6; --blue-edge:#1899d6; --blue-soft:#0e3a52;
+      --gold:#ffc800; --gold-edge:#e0a500;
+      --red:#ff5b5b; --red-edge:#ea2b2b; --red-soft:#4a1f24;
+      --purple:#ce82ff; --purple-edge:#a568cc;
+      --bg:#131f24; --bg-raise:#1b2b33; --line:#37464f;
+      --ink:#f1f7fb; --ink-soft:#9db1bb; --ink-faint:#52656d;
+      --locked:#37464f; --locked-edge:#2b3940; --locked-ink:#7e939d;
+      --ok-bg:#17351f; --ok-ink:#79e64a;
+      --bad-bg:#3d2226; --bad-ink:#ff8a8a;
+    }
+  }
+  :root[data-theme="dark"]{
+    --green:#58cc02; --green-edge:#46a302; --green-soft:#20380b;
+    --blue:#1cb0f6; --blue-edge:#1899d6; --blue-soft:#0e3a52;
+    --gold:#ffc800; --gold-edge:#e0a500;
+    --red:#ff5b5b; --red-edge:#ea2b2b; --red-soft:#4a1f24;
+    --purple:#ce82ff; --purple-edge:#a568cc;
+    --bg:#131f24; --bg-raise:#1b2b33; --line:#37464f;
+    --ink:#f1f7fb; --ink-soft:#9db1bb; --ink-faint:#52656d;
+    --locked:#37464f; --locked-edge:#2b3940; --locked-ink:#7e939d;
+    --ok-bg:#17351f; --ok-ink:#79e64a;
+    --bad-bg:#3d2226; --bad-ink:#ff8a8a;
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, sans-serif;
+    font-weight:600; line-height:1.45;
+    min-height:100dvh;
+  }
+  button{font:inherit; color:inherit; background:none; border:none; padding:0; cursor:pointer}
+  input{font:inherit; color:inherit}
+  button:focus-visible, a:focus-visible, input:focus-visible{outline:3px solid var(--blue); outline-offset:2px; border-radius:12px}
+
+  /* ============ ANIMATIONS ============ */
+  @keyframes pop{0%{transform:scale(.4); opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1); opacity:1}}
+  @keyframes riseIn{from{transform:translateY(16px); opacity:0}to{transform:translateY(0); opacity:1}}
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+  @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-6px)}}
+  @keyframes pulseRing{0%{box-shadow:0 0 0 0 var(--pulse, rgba(88,204,2,.4))}100%{box-shadow:0 0 0 16px transparent}}
+  @keyframes shine{from{background-position:-200% 0}to{background-position:200% 0}}
+  @keyframes wob{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+  .pop{animation:pop .35s cubic-bezier(.34,1.56,.64,1) both}
+  .rise{animation:riseIn .45s cubic-bezier(.22,1,.36,1) both}
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation:none !important; transition:none !important}
+  }
+
+  /* ============ CHUNKY BUTTON ============ */
+  .btn{
+    display:block; width:100%;
+    border-radius:16px; padding:13px 16px 11px;
+    font-weight:800; font-size:15px; letter-spacing:.06em; text-transform:uppercase;
+    text-align:center; user-select:none;
+    transition:filter .12s, transform .05s;
+  }
+  .btn:not(:disabled):hover{filter:brightness(1.06); transform:translateY(-1px)}
+  .btn:not(:disabled):active{transform:translateY(4px); box-shadow:none !important; filter:brightness(.97)}
+  .btn-green{background:var(--green); color:#fff; box-shadow:0 4px 0 var(--green-edge)}
+  .btn-blue{background:var(--blue); color:#fff; box-shadow:0 4px 0 var(--blue-edge)}
+  .btn-red{background:var(--red); color:#fff; box-shadow:0 4px 0 var(--red-edge)}
+  .btn-ghost{background:var(--bg-raise); color:var(--blue); box-shadow:0 2px 0 var(--line); border:2px solid var(--line)}
+  .btn:disabled{background:var(--locked); color:var(--locked-ink); box-shadow:0 4px 0 var(--locked-edge); cursor:default}
+
+  /* ============ SIGN-IN ============ */
+  .gate{
+    position:fixed; inset:0; z-index:100; background:var(--bg);
+    display:none; align-items:center; justify-content:center; padding:24px;
+  }
+  .gate.open{display:flex}
+  .gate-card{width:100%; max-width:400px; text-align:center}
+  .mascot{
+    width:96px; height:96px; margin:0 auto 8px; border-radius:50%;
+    background:var(--green); box-shadow:0 6px 0 var(--green-edge);
+    display:grid; place-items:center; font-size:48px;
+    animation:wob 2.6s ease-in-out infinite;
+  }
+  .gate h1{font-size:30px; font-weight:900; letter-spacing:-.02em; margin:12px 0 4px}
+  .gate h1 em{font-style:normal; color:var(--green)}
+  .gate .sub{color:var(--ink-soft); margin:0 0 24px; font-size:15px}
+  .field{text-align:left; margin-bottom:14px}
+  .field label{display:block; font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin:0 4px 6px}
+  .field input{
+    width:100%; padding:13px 16px; border-radius:14px;
+    border:2px solid var(--line); background:var(--bg-raise);
+    box-shadow:inset 0 2px 0 rgba(0,0,0,.04);
+    font-weight:700; font-size:16px;
+  }
+  .field input::placeholder{color:var(--ink-faint); font-weight:600}
+  .field input.bad{border-color:var(--red)}
+  .gate-err{min-height:22px; color:var(--bad-ink); font-size:13.5px; font-weight:700; margin:2px 0 12px}
+  .gate .fine{color:var(--ink-faint); font-size:12.5px; margin-top:16px}
+  .gate-card > *{animation:riseIn .5s cubic-bezier(.22,1,.36,1) both}
+  .gate-card > *:nth-child(2){animation-delay:.06s}
+  .gate-card > *:nth-child(3){animation-delay:.12s}
+  .gate-card > *:nth-child(4){animation-delay:.18s}
+  .gate-card > *:nth-child(5){animation-delay:.24s}
+  .gate-card > *:nth-child(6){animation-delay:.30s}
+  .gate-card > *:nth-child(7){animation-delay:.36s}
+
+  /* ============ APP SHELL ============ */
+  .shell{display:flex; min-height:100dvh; max-width:1056px; margin:0 auto}
+  .side{
+    width:216px; flex:none; padding:16px 12px; gap:6px;
+    border-right:2px solid var(--line);
+    display:flex; flex-direction:column;
+    position:sticky; top:0; height:100dvh;
+  }
+  .logo{color:var(--green); font-size:25px; font-weight:900; letter-spacing:-.02em; padding:8px 12px 18px}
+  .nav-item{
+    display:flex; align-items:center; gap:13px;
+    padding:10px 12px; border-radius:14px;
+    font-weight:800; font-size:13.5px; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--ink-soft); border:2px solid transparent;
+    transition:background .15s;
+  }
+  .nav-item{transition:background .15s, transform .08s}
+  .nav-item:hover{background:var(--blue-soft)}
+  .nav-item:active{transform:scale(.94)}
+  .nav-item svg{width:27px; height:27px; flex:none}
+  .nav-item.active{color:var(--blue); background:var(--blue-soft); border-color:var(--blue)}
+  .nav-item .badge{
+    margin-left:auto; background:var(--red); color:#fff; border-radius:99px;
+    font-size:11px; min-width:20px; height:20px; display:grid; place-items:center; padding:0 5px;
+  }
+
+  .main{flex:1; min-width:0; padding:20px 16px 100px}
+
+  .rail{width:300px; flex:none; padding:20px 16px; display:flex; flex-direction:column; gap:14px;
+        position:sticky; top:0; height:100dvh; overflow:auto}
+  .card{border:2px solid var(--line); border-radius:18px; padding:16px 18px; background:var(--bg-raise)}
+  .card h3{margin:0 0 6px; font-size:16px; font-weight:800}
+  .card p{margin:0; color:var(--ink-soft); font-size:14px}
+  .countdown{font-size:24px; font-weight:900; color:var(--red); font-variant-numeric:tabular-nums}
+
+  /* stat bar */
+  .statbar{
+    display:flex; justify-content:center; align-items:center; gap:26px;
+    max-width:600px; margin:0 auto 4px; padding:4px 8px;
+  }
+  .stat{
+    display:flex; align-items:center; gap:6px; font-weight:900; font-size:17px;
+    font-variant-numeric:tabular-nums; padding:5px 12px; border-radius:12px;
+    transition:background .15s, transform .1s; cursor:default;
+  }
+  .stat:hover{background:var(--bg-raise); box-shadow:inset 0 0 0 2px var(--line); transform:translateY(-1px)}
+  .stat svg{width:24px; height:24px}
+  .stat.gem{color:var(--blue)}
+  .greet{max-width:600px; margin:0 auto 4px; color:var(--ink-soft); font-size:14px; text-align:center}
+
+  /* ============ LESSON PATH ============ */
+  .path{max-width:600px; margin:0 auto}
+  .unit-banner{
+    border-radius:18px; padding:16px 20px; margin:26px 0 6px;
+    color:#fff; box-shadow:0 4px 0 rgba(0,0,0,.18);
+  }
+  .unit-banner .kicker{font-size:11.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; opacity:.85}
+  .unit-banner h2{margin:2px 0 0; font-size:19px; font-weight:900}
+  .unit-banner .done-count{font-size:12.5px; opacity:.9; margin-top:3px}
+  .nodes{display:flex; flex-direction:column; align-items:center; padding:14px 0 4px}
+  .node-row{padding:7px 0}
+  .node-wrap{position:relative; padding:9px 9px 17px; border-radius:50%}
+  .node-wrap.next{animation:pulseRing 1.9s ease-out infinite}
+  .ring{
+    /* wrap has 8px extra bottom padding so the ring centers on the
+       button INCLUDING its 3D edge, not just its face */
+    position:absolute; inset:0; border-radius:50%;
+    -webkit-mask:radial-gradient(closest-side, transparent calc(100% - 7px), #000 calc(100% - 6.5px));
+    mask:radial-gradient(closest-side, transparent calc(100% - 7px), #000 calc(100% - 6.5px));
+  }
+  .node{
+    --node-edge:var(--locked-edge);
+    width:72px; height:62px; border-radius:50%;
+    display:grid; place-items:center; position:relative;
+    box-shadow:0 8px 0 var(--node-edge);
+    transition:transform .1s cubic-bezier(.22,1,.36,1), filter .12s, box-shadow .1s;
+  }
+  .node::before{ /* glossy top highlight */
+    content:""; position:absolute; inset:7px 16px 58% 16px; border-radius:50%;
+    background:rgba(255,255,255,.25); pointer-events:none;
+  }
+  .node.locked::before{display:none}
+  .node svg{width:30px; height:30px; filter:drop-shadow(0 1px 0 rgba(0,0,0,.18))}
+  .node.done{--node-edge:var(--gold-edge); background:var(--gold); color:#8a6100}
+  .node.next{color:#fff}
+  .node.locked{background:var(--locked); color:var(--locked-ink); box-shadow:0 8px 0 var(--locked-edge)}
+  .node:not(.locked):hover{filter:brightness(1.07); transform:translateY(-2px); box-shadow:0 10px 0 var(--node-edge)}
+  .node:not(.locked):active{transform:translateY(6px); box-shadow:0 2px 0 var(--node-edge); filter:brightness(.97)}
+  .node.locked:active{transform:translateY(2px); box-shadow:0 6px 0 var(--locked-edge)}
+  .start-pill{
+    position:absolute; top:-44px; left:50%; transform:translateX(-50%);
+    background:var(--bg-raise); border:2px solid var(--line); border-radius:12px;
+    padding:5px 12px; font-size:13px; font-weight:900; letter-spacing:.08em; text-transform:uppercase;
+    white-space:nowrap; animation:bob 1.6s ease-in-out infinite; z-index:2;
+  }
+  .start-pill::after{
+    content:""; position:absolute; bottom:-7px; left:50%; transform:translateX(-50%) rotate(45deg);
+    width:12px; height:12px; background:var(--bg-raise);
+    border-right:2px solid var(--line); border-bottom:2px solid var(--line);
+  }
+  .node-label{
+    text-align:center; font-size:12.5px; color:var(--ink-soft); font-weight:700;
+    max-width:110px; margin:-4px auto 0;
+  }
+
+  /* ============ BOTTOM NAV ============ */
+  .bottomnav{
+    display:none; position:fixed; left:0; right:0; bottom:0; z-index:40;
+    background:var(--bg); border-top:2px solid var(--line);
+    padding:5px 8px calc(5px + env(safe-area-inset-bottom));
+    justify-content:space-around;
+  }
+  .bottomnav .nav-item{flex-direction:column; gap:0; font-size:0; padding:7px 16px; position:relative}
+  .bottomnav .nav-item svg{width:30px; height:30px}
+  .bottomnav .nav-item .badge{position:absolute; top:2px; right:8px; margin:0}
+
+  @media (max-width: 920px){ .rail{display:none} }
+  @media (max-width: 700px){
+    .side{display:none}
+    .bottomnav{display:flex}
+    .main{padding:12px 12px 100px}
+  }
+  @media (max-width: 380px){ .node-row{--amp:48px} }
+
+  /* ============ QUIZ ============ */
+  .quiz{
+    position:fixed; inset:0; z-index:50; background:var(--bg);
+    display:none; flex-direction:column;
+  }
+  .quiz.open{display:flex}
+  .quiz-top{
+    display:flex; align-items:center; gap:14px;
+    max-width:700px; width:100%; margin:0 auto;
+    padding:calc(14px + env(safe-area-inset-top)) 16px 8px;
+  }
+  .quit{color:var(--ink-faint); font-size:26px; font-weight:800; line-height:1; padding:4px 8px}
+  .pbar{flex:1; height:14px; border-radius:8px; background:var(--line); overflow:hidden}
+  .pbar > div{
+    height:100%; border-radius:8px; background:var(--green); width:0%;
+    transition:width .4s cubic-bezier(.22,1,.36,1); position:relative;
+  }
+  .pbar > div::after{
+    content:""; position:absolute; inset:3px 4px auto; height:4px; border-radius:4px;
+    background:rgba(255,255,255,.35);
+  }
+  .quiz-hearts{display:flex; align-items:center; gap:5px; color:var(--red); font-weight:900; font-variant-numeric:tabular-nums}
+  .quiz-hearts svg{width:22px; height:22px}
+  .quiz-hearts.lost svg{animation:shake .4s}
+  .quiz-body{flex:1; overflow:auto; width:100%}
+  .quiz-inner{max-width:640px; margin:0 auto; padding:18px 16px 24px}
+  .qtype{font-size:12.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 6px}
+  .qtext{font-size:22px; font-weight:800; margin:0 0 20px; text-wrap:balance}
+  .choices{display:flex; flex-direction:column; gap:10px}
+  .choices.wrong{animation:shake .45s}
+  .choice{
+    border:2px solid var(--line); border-radius:14px; background:var(--bg-raise);
+    box-shadow:0 3px 0 var(--line);
+    padding:13px 16px; text-align:left; font-size:16px; font-weight:700;
+    display:flex; gap:12px; align-items:center;
+    transition:transform .06s;
+    animation:riseIn .35s cubic-bezier(.22,1,.36,1) both;
+  }
+  .choice:nth-child(2){animation-delay:.05s}
+  .choice:nth-child(3){animation-delay:.10s}
+  .choice:nth-child(4){animation-delay:.15s}
+  .choice:not(:disabled):active{transform:translateY(2px)}
+  .choice .key{
+    flex:none; width:26px; height:26px; border-radius:8px;
+    border:2px solid var(--line); color:var(--ink-faint);
+    display:grid; place-items:center; font-size:13px; font-weight:800;
+  }
+  .choice.picked{border-color:var(--blue); background:var(--blue-soft); box-shadow:0 3px 0 var(--blue-edge); color:var(--blue)}
+  .choice.picked .key{border-color:var(--blue); color:var(--blue)}
+  .choice.reveal-ok{border-color:var(--green); background:var(--green-soft); box-shadow:0 3px 0 var(--green-edge); color:var(--ok-ink)}
+  .choice.reveal-ok .key{border-color:var(--green); color:var(--ok-ink)}
+  .choice.reveal-bad{border-color:var(--red); background:var(--red-soft); box-shadow:0 3px 0 var(--red-edge); color:var(--bad-ink)}
+  .choice:disabled{cursor:default}
+  .quiz-footer{
+    border-top:2px solid var(--line);
+    padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+  }
+  .quiz-footer.ok{background:var(--ok-bg); border-top-color:transparent; animation:slideUp .3s cubic-bezier(.22,1,.36,1)}
+  .quiz-footer.bad{background:var(--bad-bg); border-top-color:transparent; animation:slideUp .3s cubic-bezier(.22,1,.36,1)}
+  .qf-inner{max-width:640px; margin:0 auto; display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+  .verdict{flex:1; min-width:200px; display:flex; gap:12px; align-items:flex-start}
+  .verdict .vicon{
+    flex:none; width:44px; height:44px; border-radius:50%;
+    background:var(--bg-raise); display:grid; place-items:center; font-size:24px;
+  }
+  .verdict h4{margin:0; font-size:19px; font-weight:900}
+  .verdict p{margin:2px 0 0; font-size:14px; font-weight:700}
+  .quiz-footer.ok .verdict{color:var(--ok-ink)}
+  .quiz-footer.bad .verdict{color:var(--bad-ink)}
+  .qf-inner .btn{width:auto; min-width:150px; margin-left:auto}
+
+  /* ============ RESULTS ============ */
+  .results{
+    position:fixed; inset:0; z-index:60; background:var(--bg);
+    display:none; place-items:center; text-align:center; padding:24px;
+  }
+  .results.open{display:grid}
+  #confetti{position:absolute; inset:0; pointer-events:none}
+  .results-card{position:relative}
+  .results .big{font-size:64px; margin:0; animation:pop .5s cubic-bezier(.34,1.56,.64,1) both}
+  .results h2{font-size:26px; font-weight:900; margin:6px 0 4px; color:var(--gold); animation:riseIn .4s .1s both}
+  .results h2.fail{color:var(--red)}
+  .results p{color:var(--ink-soft); margin:0 0 12px; animation:riseIn .4s .18s both}
+  .result-chips{display:flex; gap:12px; justify-content:center; margin:14px 0 26px}
+  .chip{border:2px solid; border-radius:16px; overflow:hidden; min-width:118px; animation:pop .4s both; background:var(--bg-raise)}
+  .chip:nth-child(2){animation-delay:.12s}
+  .chip .label{font-size:11px; font-weight:900; letter-spacing:.1em; text-transform:uppercase; color:#fff; padding:4px 6px}
+  .chip .val{font-size:24px; font-weight:900; padding:8px 6px 10px; font-variant-numeric:tabular-nums}
+  .chip.gem{border-color:var(--blue)} .chip.gem .label{background:var(--blue)} .chip.gem .val{color:var(--blue)}
+  .chip.acc{border-color:var(--green)} .chip.acc .label{background:var(--green)} .chip.acc .val{color:var(--green)}
+  .chip.acc.low{border-color:var(--red)} .chip.acc.low .label{background:var(--red)} .chip.acc.low .val{color:var(--red)}
+  .results .btn{max-width:320px; margin:0 auto; animation:riseIn .4s .25s both}
+
+  /* ============ PAGES ============ */
+  .page{max-width:600px; margin:0 auto}
+  .page h1{font-size:23px; font-weight:900; margin:8px 0 14px}
+  .review-item{
+    border:2px solid var(--line); border-radius:14px; padding:13px 16px;
+    margin-bottom:10px; background:var(--bg-raise); animation:riseIn .3s both;
+  }
+  .review-item .q{font-weight:800; margin:0 0 4px}
+  .review-item .a{color:var(--ok-ink); font-weight:700; margin:0}
+  .review-item .why{color:var(--ink-soft); margin:4px 0 0; font-size:13px}
+  .muted{color:var(--ink-soft)}
+  .tabpane{animation:riseIn .3s both}
+
+  /* ============ PROFILE / STATS ============ */
+  .profile-head{display:flex; align-items:center; gap:14px; margin:4px 0 18px}
+  .avatar{
+    width:66px; height:66px; border-radius:50%; flex:none;
+    background:linear-gradient(135deg, var(--green), var(--blue));
+    color:#fff; font-size:30px; font-weight:900;
+    display:grid; place-items:center;
+    box-shadow:0 4px 0 var(--green-edge);
+  }
+  .profile-head h2{margin:0; font-size:22px; font-weight:900}
+  .profile-head p{margin:2px 0 0; color:var(--ink-soft); font-size:13.5px}
+  .sec-label{font-size:12px; font-weight:900; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); margin:20px 4px 8px}
+  .stats-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .stats-grid .stile:last-child:nth-child(odd){grid-column:1 / -1}
+  .stile{
+    border:2px solid var(--line); border-radius:16px; background:var(--bg-raise);
+    padding:12px 14px; display:flex; gap:11px; align-items:center;
+    box-shadow:0 2px 0 var(--line);
+    animation:pop .35s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .stats-grid .stile:nth-child(2){animation-delay:.06s}
+  .stats-grid .stile:nth-child(3){animation-delay:.12s}
+  .stats-grid .stile:nth-child(4){animation-delay:.18s}
+  .stile .ic{
+    width:40px; height:40px; border-radius:12px; flex:none;
+    display:grid; place-items:center; color:#fff;
+    box-shadow:inset 0 -3px 0 rgba(0,0,0,.15);
+  }
+  .stile .ic svg{width:22px; height:22px}
+  .stile .num{font-size:21px; font-weight:900; line-height:1.1; font-variant-numeric:tabular-nums}
+  .stile .lbl{font-size:10.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint)}
+  .ic-gold{background:var(--gold)} .ic-blue{background:var(--blue)}
+  .ic-green{background:var(--green)} .ic-red{background:var(--red)}
+  .meter{height:16px; border-radius:10px; background:var(--line); overflow:hidden; margin-top:10px}
+  .meter > div{
+    height:100%; border-radius:10px; min-width:8px;
+    background:var(--green); position:relative;
+    transition:width .6s cubic-bezier(.22,1,.36,1);
+  }
+  .meter > div::after{
+    content:""; position:absolute; inset:3px 5px auto; height:4px; border-radius:4px;
+    background:rgba(255,255,255,.35);
+  }
+  .meter-cap{display:flex; justify-content:space-between; font-size:12.5px; font-weight:800; color:var(--ink-soft); margin-top:5px}
+</style>
+
+<!-- ============ SIGN-IN GATE ============ -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="mascot">🌲</div>
+    <h1>CS106 <em>Prep</em></h1>
+    <p class="sub">The fun way to cram for the CS 106EA final.<br>Stanford students only.</p>
+    <div class="field">
+      <label for="nick">Nickname</label>
+      <input id="nick" maxlength="20" placeholder="TreeHugger42" autocomplete="nickname">
+    </div>
+    <div class="field">
+      <label for="email">Stanford email</label>
+      <input id="email" type="email" placeholder="you@stanford.edu" autocomplete="email" inputmode="email">
+    </div>
+    <p class="gate-err" id="gate-err"></p>
+    <button class="btn btn-green" id="gate-btn" onclick="trySignIn()">Start learning</button>
+    <p class="fine">No password, no server — this just personalizes the app. Everything stays in your browser.</p>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="side" aria-label="Main">
+    <div class="logo">CS106 Prep</div>
+    <button class="nav-item active" data-tab="learn" onclick="showTab('learn')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 11h3v9h6v-6h2v6h6v-9h3L12 3z"/></svg>
+      <span>Learn</span></button>
+    <button class="nav-item" data-tab="practice" onclick="showTab('practice')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h2v6H4zM1 11h2v2H1zm5-4h2v10H6zm12 2h2v6h-2zm3 2h2v2h-2zm-5-4h2v10h-2zM9 11h6v2H9z"/></svg>
+      <span>Practice</span><span class="badge" data-badge hidden></span></button>
+    <button class="nav-item" data-tab="profile" onclick="showTab('profile')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5z"/></svg>
+      <span>Profile</span></button>
+  </nav>
+
+  <main class="main">
+    <p class="greet" id="greet"></p>
+    <div class="statbar" id="statbar"></div>
+    <div id="tab-learn" class="path tabpane"></div>
+    <div id="tab-practice" class="page tabpane" hidden></div>
+    <div id="tab-profile" class="page tabpane" hidden></div>
+  </main>
+
+  <aside class="rail">
+    <div class="card" id="rail-exam"></div>
+    <div class="card">
+      <h3>How this works</h3>
+      <p>Work down the path — each lesson unlocks the next. Missed questions land in Practice so you can clear them before Friday.</p>
+    </div>
+  </aside>
+</div>
+
+<nav class="bottomnav" aria-label="Main">
+  <button class="nav-item active" data-tab="learn" onclick="showTab('learn')" aria-label="Learn">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 11h3v9h6v-6h2v6h6v-9h3L12 3z"/></svg></button>
+  <button class="nav-item" data-tab="practice" onclick="showTab('practice')" aria-label="Practice">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h2v6H4zM1 11h2v2H1zm5-4h2v10H6zm12 2h2v6h-2zm3 2h2v2h-2zm-5-4h2v10h-2zM9 11h6v2H9z"/></svg>
+    <span class="badge" data-badge hidden></span></button>
+  <button class="nav-item" data-tab="profile" onclick="showTab('profile')" aria-label="Profile">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5z"/></svg></button>
+</nav>
+
+<!-- ============ QUIZ ============ -->
+<div class="quiz" id="quiz" role="dialog" aria-modal="true" aria-label="Lesson">
+  <div class="quiz-top">
+    <button class="quit" onclick="quitQuiz()" aria-label="Quit lesson">×</button>
+    <div class="pbar"><div id="pfill"></div></div>
+    <div class="quiz-hearts" id="heartbox"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.7-10-9.3C.5 8.6 2.6 5 6.2 5c2 0 3.6 1 4.5 2.5h2.6C14.2 6 15.8 5 17.8 5c3.6 0 5.7 3.6 4.2 6.7C19.5 16.3 12 21 12 21z"/></svg><span id="qhearts">5</span></div>
+  </div>
+  <div class="quiz-body"><div class="quiz-inner">
+    <p class="qtype" id="qtype">Select the correct answer</p>
+    <h2 class="qtext" id="qtext"></h2>
+    <div class="choices" id="choices"></div>
+  </div></div>
+  <div class="quiz-footer" id="qfooter">
+    <div class="qf-inner">
+      <div class="verdict" id="verdict"></div>
+      <button class="btn btn-green" id="checkbtn" onclick="onCheck()" disabled>Check</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RESULTS ============ -->
+<div class="results" id="results">
+  <canvas id="confetti"></canvas>
+  <div class="results-card">
+    <p class="big" id="res-emoji">🎉</p>
+    <h2 id="res-title">Lesson complete!</h2>
+    <p id="res-sub"></p>
+    <div class="result-chips">
+      <div class="chip gem"><div class="label">Diamonds</div><div class="val" id="res-gems">+0</div></div>
+      <div class="chip acc" id="res-acc-chip"><div class="label">Accuracy</div><div class="val" id="res-acc">0%</div></div>
+    </div>
+    <button class="btn btn-green" id="res-btn" onclick="closeResults()">Continue</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   COURSE CONTENT — placeholder until the real CS 106EA material
+   arrives. Structure: units → lessons → questions.
+   Each question: { q, choices: [4 strings], answer: index, why }
+   ===================================================================== */
+const EXAM = { name:"CS 106EA Final", when:"Friday, Aug 14 · 12:00 PM", date:"2026-08-14T12:00:00" };
+
+const COURSE = [
+ {
+  "title": "Exploring AI",
+  "color": "#58cc02",
+  "edge": "#46a302",
+  "lessons": [
+   {
+    "name": "What is AI?",
+    "questions": [
+     {
+      "q": "According to the lecture, what is the status of the definition of Artificial Intelligence?",
+      "choices": [
+       "It is precisely defined by whether a system passes the Turing Test",
+       "It was fixed by John McCarthy in 1955 and has never changed",
+       "There is no generally agreed-upon definition; several reasonable ones exist",
+       "It only means machines that simulate human consciousness"
+      ],
+      "answer": 2,
+      "why": "The lecture stresses there is no single agreed definition of AI, offering several reasonable ones instead."
+     },
+     {
+      "q": "What distinguishes Artificial General Intelligence (AGI) from Narrow Artificial Intelligence?",
+      "choices": [
+       "AGI can solve any problem a human can; Narrow AI solves a specific type of problem",
+       "AGI runs on neural networks while Narrow AI uses symbolic rules",
+       "AGI describes today's chatbots; Narrow AI describes older expert systems",
+       "AGI far exceeds human reasoning; Narrow AI merely matches humans"
+      ],
+      "answer": 0,
+      "why": "AGI has human-comparable understanding across any problem, while Narrow AI targets one specific kind of problem."
+     },
+     {
+      "q": "What is the difference between running a model in Training Mode versus Inference Mode?",
+      "choices": [
+       "Training Mode is faster because no predictions are made",
+       "Training Mode output is used to update the model; Inference Mode makes actual predictions",
+       "Inference Mode is only ever used before training begins",
+       "Training Mode uses production data; Inference Mode uses the training set"
+      ],
+      "answer": 1,
+      "why": "In training mode the model is fed training instances and its output updates the model; inference mode is used for actual predictions."
+     },
+     {
+      "q": "In the lecture's terms, what separates the Training Process from Production Use?",
+      "choices": [
+       "In production the model constantly retrains itself on live data",
+       "Training happens in the cloud; production happens on local machines",
+       "Production uses training mode while training uses inference mode",
+       "Training works to improve the model; in production a fully trained model does real work"
+      ],
+      "answer": 3,
+      "why": "The training process is the extensive effort to improve the model; production use runs the finished model for real work, always in inference mode."
+     },
+     {
+      "q": "Which correctly describes the relationship between AI, Machine Learning, Neural Networks, and Deep Learning?",
+      "choices": [
+       "Nested subsets: Deep Learning inside Neural Networks, inside ML, inside AI",
+       "They are four separate, non-overlapping fields of computer science",
+       "Machine Learning is a subset of Neural Networks, which sit inside Deep Learning",
+       "AI and Data Science are the same field, and both contain Deep Learning"
+      ],
+      "answer": 0,
+      "why": "AI is the overall field; ML is a subfield, neural networks are based on ML, and most modern neural networks are Deep Learning."
+     },
+     {
+      "q": "What is the key difference between Symbolic AI and Subsymbolic AI?",
+      "choices": [
+       "Symbolic AI learns from data; Subsymbolic AI uses hand-written rules",
+       "Subsymbolic AI is easier for humans to understand than Symbolic AI",
+       "Symbolic AI represents info as symbols or rules; Subsymbolic uses mathematical models",
+       "Symbolic AI powers modern LLMs; Subsymbolic AI powers video game opponents"
+      ],
+      "answer": 2,
+      "why": "Symbolic AI represents information as explicit symbols or rules, while subsymbolic AI hides it in mathematical models like neural networks."
+     },
+     {
+      "q": "Why is Machine Learning critical to modern AI?",
+      "choices": [
+       "It removes the need for any training data",
+       "Humans cannot write explicit rules for the complex tasks modern AI performs",
+       "It guarantees models never drift after deployment",
+       "It makes AI decisions fully transparent and explainable"
+      ],
+      "answer": 1,
+      "why": "Codifying rules by hand proved naive; ML programs instead find statistical patterns in data, which nearly all modern AI depends on."
+     },
+     {
+      "q": "A streaming model groups customers by viewing habits, with no labels given and the groups invented by the AI during training. Which type of system is this?",
+      "choices": [
+       "Generative",
+       "Predictive classification",
+       "Predictive regression",
+       "Descriptive"
+      ],
+      "answer": 3,
+      "why": "Descriptive systems identify patterns or groups that the AI itself creates during training, rather than using predefined classes."
+     }
+    ]
+   },
+   {
+    "name": "ML Basics & Math",
+    "questions": [
+     {
+      "q": "What is the main difference between Supervised Learning and Unsupervised Learning?",
+      "choices": [
+       "Supervised learning requires a human to watch every training step",
+       "Supervised data is labeled with expected outputs; unsupervised data has no labels",
+       "Unsupervised learning is only used for generative chatbots",
+       "Supervised learning needs no dataset; unsupervised requires a labeled one"
+      ],
+      "answer": 1,
+      "why": "In supervised learning samples are labeled with the expected output; unsupervised learning provides no labels and is typical for descriptive models."
+     },
+     {
+      "q": "What is Self-Supervised Learning, and why do we use it?",
+      "choices": [
+       "Humans label a small sample and the model requests help when unsure",
+       "The model trains with no data at all, by trial and error in an environment",
+       "A model checks its own answers against human-written rules",
+       "The system generates its own labels by algorithm, vital for datasets too big to hand-label"
+      ],
+      "answer": 3,
+      "why": "Methods like next-word prediction create labels automatically, enabling training on datasets far too large for human labeling, as with LLMs."
+     },
+     {
+      "q": "In a housing dataset, one house's record (square footage, bedrooms, price sold) is best described as which of the following?",
+      "choices": [
+       "A sample: one item in the dataset, with features as inputs and a label as output",
+       "A feature: one column shared by every house in the dataset",
+       "A label: the ground-truth output the model must predict",
+       "A prediction: the model's estimate of the house's value"
+      ],
+      "answer": 0,
+      "why": "Datasets consist of samples; each sample carries input features and a ground-truth label the model should learn to predict."
+     },
+     {
+      "q": "Which is an advantage of Classical Machine Learning methods over neural-network-based methods?",
+      "choices": [
+       "They achieve higher accuracy on every task",
+       "They require far more data, which improves results",
+       "They are easier to understand and less prone to overfitting",
+       "They only run on specialized GPU hardware"
+      ],
+      "answer": 2,
+      "why": "Classical methods are easier to understand, less computationally expensive, work with less data, and are less prone to overfitting."
+     },
+     {
+      "q": "Which three mathematical specialties form the foundation for Machine Learning?",
+      "choices": [
+       "Geometry, Trigonometry, and Number Theory",
+       "Statistics (and Probability), Calculus, and Linear Algebra",
+       "Logic, Set Theory, and Graph Theory",
+       "Topology, Combinatorics, and Differential Equations"
+      ],
+      "answer": 1,
+      "why": "The lecture names Statistics (and Probability), Calculus, and Linear Algebra as the three specialties behind Machine Learning."
+     },
+     {
+      "q": "In Machine Learning, what is a Tensor?",
+      "choices": [
+       "A multi-dimensional array holding a single data type, used to store data like samples",
+       "A Python list that can mix strings, integers, and floats",
+       "A special CPU instruction used for graphics rendering",
+       "The loss value produced by the cost function"
+      ],
+      "answer": 0,
+      "why": "Tensors are essentially multi-dimensional arrays storing one data type (floating point for neural networks), used to hold samples, outputs, and networks."
+     },
+     {
+      "q": "A housing model has 4 features and 2 labels. Representing each sample as one point in n-dimensional space (inputs and outputs together), what is n?",
+      "choices": [
+       "4",
+       "2",
+       "8",
+       "6"
+      ],
+      "answer": 3,
+      "why": "Combining the input and output spaces gives one dimension per value: 4 features plus 2 labels makes a 6-dimensional space."
+     },
+     {
+      "q": "What is Google Colab and why is it used in this course?",
+      "choices": [
+       "A local Python IDE that compiles notebooks into production code",
+       "A Google chatbot used to answer homework questions",
+       "Jupyter notebooks on Google's cloud, with GPUs/AI accelerators and no setup needed",
+       "A dataset of crawled web pages used to train large language models"
+      ],
+      "answer": 2,
+      "why": "Colab combines Jupyter Notebooks with cloud computing, offering preconfigured Python environments and AI-optimized hardware few laptops have."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "title": "Neural Networks",
+  "color": "#1cb0f6",
+  "edge": "#1899d6",
+  "lessons": [
+   {
+    "name": "Neurons & Layers",
+    "questions": [
+     {
+      "q": "Compared with classical machine learning methods, what is one advantage of neural networks?",
+      "choices": [
+       "They are cheaper in both training and inference costs",
+       "They require less data to train",
+       "They handle a wider range of input types, like text, images, and sequence data",
+       "They make classical methods obsolete for all real-life uses"
+      ],
+      "answer": 2,
+      "why": "Neural networks are more versatile and far more adept with text, images, and sequence data, while classical methods are cheaper and need less data."
+     },
+     {
+      "q": "\"ChatGPT 3.5 has 175 billion parameters.\" In neural network terms, what are those parameters?",
+      "choices": [
+       "The weights and biases whose values are learned during training",
+       "The number of neurons in the network",
+       "Settings like layer count chosen by the network designer",
+       "The number of training samples the model saw"
+      ],
+      "answer": 0,
+      "why": "Parameters are the weights and biases, which are learnable and change during the training process."
+     },
+     {
+      "q": "How does a node in a neural network compute its output from its inputs?",
+      "choices": [
+       "Average all the inputs, then multiply by the bias",
+       "Multiply inputs by their weights, sum them, add the bias, then apply the activation",
+       "Apply the activation function to each input, then add all the weights",
+       "Multiply each input by the bias, then add the weights together"
+      ],
+      "answer": 1,
+      "why": "The node computes w1i1 + w2i2 + w3i3 + b and passes that sum through the activation function."
+     },
+     {
+      "q": "In the neuron walkthrough, after computing w1i1 + w2i2 + w3i3 + b (the pre-activation value), what happens next?",
+      "choices": [
+       "That value is sent directly to the next layer as the output",
+       "It is compared to the loss and discarded if too high",
+       "It is scaled so all neurons' outputs sum to 1",
+       "It is passed through the activation function to produce the neuron's final output"
+      ],
+      "answer": 3,
+      "why": "The pre-activation value (e.g., 1.44) is converted to the final output by the activation function, such as sigmoid giving 0.8085."
+     },
+     {
+      "q": "What happens if we remove activation functions and use a network without them?",
+      "choices": [
+       "No matter how many nodes and layers, it can only represent lines, planes, hyper-planes",
+       "The network trains faster while keeping the same accuracy",
+       "Every node's output becomes zero",
+       "Hidden layers stop working but the output layer stays non-linear"
+      ],
+      "answer": 0,
+      "why": "Without activation functions the network is limited to lines, planes, and hyper-planes; activation functions provide the non-linearity."
+     },
+     {
+      "q": "What does it mean to have a Deep Neural Network?",
+      "choices": [
+       "A network with more than 100 total nodes",
+       "Any network trained using gradient descent",
+       "A network with two or more hidden layers",
+       "A network where all layers are fully connected"
+      ],
+      "answer": 2,
+      "why": "The most common definition of a deep neural network is any network with two or more hidden layers."
+     },
+     {
+      "q": "What key characteristic defines a Dense (Fully-Connected) Neural Network?",
+      "choices": [
+       "It must have at least two hidden layers",
+       "Every node in a layer connects to every node in the previous and next layers",
+       "All of its weights share the same value",
+       "It processes inputs in order, preserving sequence information"
+      ],
+      "answer": 1,
+      "why": "The important thing for a dense network is that all nodes connect to all nodes in the previous and next layers."
+     },
+     {
+      "q": "What happens when a network has high capacity but we only have a small dataset?",
+      "choices": [
+       "Underfitting: the network cannot model the phenomenon at all",
+       "Nothing: the extra capacity simply goes unused",
+       "Vanishing gradients stop the network from training",
+       "Overfitting: the network memorizes individual datapoints instead of the underlying pattern"
+      ],
+      "answer": 3,
+      "why": "Too much capacity leads to overfitting: the network starts memorizing datapoints and stops focusing on the underlying phenomena."
+     }
+    ]
+   },
+   {
+    "name": "Inputs & Training",
+    "questions": [
+     {
+      "q": "What does it mean that \"input order is an illusion\" for dense neural networks?",
+      "choices": [
+       "Dense networks treat all inputs equally; the ordering in our diagrams carries no meaning",
+       "Inputs are randomly shuffled at each layer during training",
+       "Dense networks secretly learn word order from the input sequence",
+       "Input order matters during training but not during inference"
+      ],
+      "answer": 0,
+      "why": "A dense network does not associate adjacent inputs more closely; reordering the inputs gives essentially the same network."
+     },
+     {
+      "q": "One-Hot Encoding is used for categorical features. What benefit does it provide over integer encoding?",
+      "choices": [
+       "It compresses many categories into a single integer input node",
+       "It rescales inputs to a mean of 0 and standard deviation of 1",
+       "It avoids implying statistical relationships between categories that do not exist",
+       "It lets one sample belong to several categories at once"
+      ],
+      "answer": 2,
+      "why": "Integer encoding falsely implies relationships (e.g., fish is halfway between bird and horse); one-hot gives each category its own input node."
+     },
+     {
+      "q": "Why are activation functions like Sigmoid and Softmax sometimes placed on output nodes?",
+      "choices": [
+       "To add non-linearity so the output layer can learn complex patterns",
+       "To shape raw outputs (logits) into interpretable values such as probabilities",
+       "To prevent vanishing gradients in the final layer",
+       "To standardize the inputs before they reach the hidden layers"
+      ],
+      "answer": 1,
+      "why": "Sigmoid gives a 0-to-1 output interpretable as a probability, and softmax converts logits into probabilities summing to 1."
+     },
+     {
+      "q": "What is an Epoch, and what is its relationship to a Batch?",
+      "choices": [
+       "An epoch is a small subset of a batch",
+       "An epoch is one parameter update; a batch is the entire dataset",
+       "Epoch and batch are two names for the same thing",
+       "An epoch is one full pass of the training set; each batch is the data per update"
+      ],
+      "answer": 3,
+      "why": "An epoch passes the entire training dataset through the process, while a batch is the data sent through per parameter update."
+     },
+     {
+      "q": "In Stochastic Gradient Descent (SGD), when are the network's parameters updated?",
+      "choices": [
+       "After each individual training instance",
+       "Only once per epoch, after the entire training set is averaged",
+       "Only when the validation loss stops improving",
+       "After each randomly shuffled minibatch of instances"
+      ],
+      "answer": 0,
+      "why": "SGD updates after each training instance, unlike full-batch (once per epoch) and minibatch (after each minibatch) gradient descent."
+     },
+     {
+      "q": "What does \"Stochastic\" refer to in the context of machine learning batches?",
+      "choices": [
+       "The steady decrease of loss from epoch to epoch",
+       "Updating one parameter at a time instead of all at once",
+       "An element of randomness, such as randomly reordering the samples each epoch",
+       "Converting logits into probability outputs"
+      ],
+      "answer": 2,
+      "why": "Stochastic refers to randomness: samples are randomly reordered or shuffled each epoch, helping the model make more general observations."
+     },
+     {
+      "q": "Which of the following is a common cause of Overfitting?",
+      "choices": [
+       "A model too small to capture the underlying phenomenon",
+       "Noisy data, or too little data used with a high-capacity network",
+       "Setting the learning rate too low",
+       "Running the validation dataset too many times"
+      ],
+      "answer": 1,
+      "why": "Overfitting is most likely with noisy data, insufficient data with a high-capacity network, or a mismatch between model size and data amount."
+     },
+     {
+      "q": "Why do we need a Validation Dataset when we already have Training and Testing Datasets?",
+      "choices": [
+       "Validation provides extra data for updating the model's parameters",
+       "The testing dataset is usually too small to be useful",
+       "The validation set replaces the testing set once training ends",
+       "Tuning on the test set leaks info into the model; validation keeps the final check clean"
+      ],
+      "answer": 3,
+      "why": "Using the testing set for architecture or hyperparameter decisions leaks information and inflates scores, so validation is used for tuning instead."
+     }
+    ]
+   },
+   {
+    "name": "Gradient Descent",
+    "questions": [
+     {
+      "q": "Why do we use the parameter vs. loss graph, rather than input vs. output, when deciding how to update parameters?",
+      "choices": [
+       "Input vs. output graphs cannot be drawn for any real network",
+       "It shows how changing a parameter changes the loss, which is exactly what updates need",
+       "Loss graphs require less computation than output graphs",
+       "Input vs. output graphs are only available during production"
+      ],
+      "answer": 1,
+      "why": "For tuning we need to know how changing a parameter's value changes the network's loss, which the parameter vs. loss graph shows."
+     },
+     {
+      "q": "What is the difference between a gradient and gradient descent?",
+      "choices": [
+       "The gradient is the slope at a point; gradient descent repeatedly uses it to update",
+       "They are two names for the same algorithm",
+       "The gradient is the learning rate, and descent is the loss value",
+       "Gradient descent computes slopes, while the gradient is the final parameter value"
+      ],
+      "answer": 0,
+      "why": "The gradient is the slope of the parameter vs. loss graph at a point, and gradient descent is the iterative process of using it to adjust parameters."
+     },
+     {
+      "q": "What ultimately causes the gradient descent process to stop?",
+      "choices": [
+       "It stops automatically the moment loss reaches exactly zero",
+       "It stops once each parameter individually reaches its minimum",
+       "Criteria like validation loss stalling, training problems, or hitting resource limits",
+       "It stops whenever the gradient becomes negative"
+      ],
+      "answer": 2,
+      "why": "Training stops when validation loss stops improving, training problems are detected, or the budgeted time/compute limit is reached."
+     },
+     {
+      "q": "What is the difference between Loss and Accuracy?",
+      "choices": [
+       "Loss counts correct predictions; accuracy measures distance from the truth",
+       "Loss is only used at test time, and accuracy only during training",
+       "They are identical metrics reported on different scales",
+       "Loss is how far a prediction is from ground truth; accuracy is the fraction correct"
+      ],
+      "answer": 3,
+      "why": "Loss quantifies how far off a prediction is from the ground truth, while accuracy is the number of correct predictions out of all samples."
+     },
+     {
+      "q": "Which statement about the Forward Pass and Backward Pass is correct?",
+      "choices": [
+       "Training uses both passes; production use only needs the forward pass",
+       "Production uses both passes, but training only uses the forward pass",
+       "The backward pass is what generates the network's predictions",
+       "The forward pass is where parameters get updated"
+      ],
+      "answer": 0,
+      "why": "In training, a forward pass makes the prediction and a backward pass assigns loss and computes gradients; production only runs forward."
+     },
+     {
+      "q": "During training, how is a Validation Sample processed differently from a Training Sample?",
+      "choices": [
+       "Validation samples get an extra backward pass to double-check the gradients",
+       "Training samples get backprop and updates; validation runs in inference mode, no updates",
+       "They are processed identically, but the validation loss is ignored",
+       "Validation samples update only the output layer's parameters"
+      ],
+      "answer": 1,
+      "why": "Training samples run in training mode with stored intermediates and backpropagation; validation data uses inference mode just to evaluate performance."
+     },
+     {
+      "q": "What causes Vanishing Gradients, and what is the implication?",
+      "choices": [
+       "Gradients grow so large the numbers overflow, corrupting the model",
+       "The learning rate shrinks every epoch until training halts",
+       "Having too few layers makes gradients impossible to compute",
+       "Small values multiplied across many layers shrink gradients to near zero, halting training"
+      ],
+      "answer": 3,
+      "why": "Small gradients decrease further as they propagate backward through each layer until they can't be distinguished from zero, preventing training."
+     },
+     {
+      "q": "Which best describes Backpropagation?",
+      "choices": [
+       "Passing input data forward through the network to generate predictions",
+       "Randomly disabling nodes in a layer to prevent overfitting",
+       "Propagating loss backward to assign responsibility per node/parameter and get gradients",
+       "Adding connections that skip layers so gradients bypass them"
+      ],
+      "answer": 2,
+      "why": "Backpropagation takes the network loss and propagates it backward to determine each node's and parameter's responsibility and calculate gradients."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "title": "AI in the Real World",
+  "color": "#ce82ff",
+  "edge": "#a568cc",
+  "lessons": [
+   {
+    "name": "What Can AI Predict?",
+    "questions": [
+     {
+      "q": "What makes 'irreducible error' irreducible when predicting outcomes like the progress of a disease with random mutations?",
+      "choices": [
+       "The training algorithm is too slow to converge on an answer",
+       "The data was collected in the wrong geographic region",
+       "Random components create uncertainty no model can eliminate",
+       "Neural networks are opaque, so errors cannot be located"
+      ],
+      "answer": 2,
+      "why": "Random components create irreducible uncertainty that no amount of skill or information can remove."
+     },
+     {
+      "q": "We can predict which regions earthquakes will occur in but not exactly when. Why do aggregate predictions succeed where individual ones fail?",
+      "choices": [
+       "Random variation in individual outcomes averages out at the population level",
+       "Populations behave deterministically while individuals are chaotic",
+       "Larger populations mean more compute can be applied to each case",
+       "Aggregate models use fewer features, avoiding overfitting entirely"
+      ],
+      "answer": 0,
+      "why": "At the population level, individual random variations average out, so aggregate patterns remain predictable."
+     },
+     {
+      "q": "Why did the Fragile Families Challenge largely fail from a machine learning perspective?",
+      "choices": [
+       "The models were trained on a completely different population of children",
+       "4,000 samples with 10,000 features is tiny for ML and worsens the curse of dimensionality",
+       "Researchers refused to share the data with ML practitioners",
+       "The neural networks used were too large and memorized every child"
+      ],
+      "answer": 1,
+      "why": "The dataset was small by ML standards and its 10,000 features made dimensionality problems worse, so the best models were barely better than a coin flip."
+     },
+     {
+      "q": "Which combination best explains why geopolitical events like war or food shortages are hard for AI to predict?",
+      "choices": [
+       "Governments encrypt the data, and models cannot read encrypted inputs",
+       "There is too much data, so models overfit to individual countries",
+       "GPUs lack the memory bandwidth needed for geopolitical datasets",
+       "Few data samples, many relevant features, chaotic influences, and a changing world"
+      ],
+      "answer": 3,
+      "why": "With fewer than 200 countries, rare events, a huge number of relevant features, chaos-theory effects, and older data made irrelevant by change, prediction is very hard."
+     },
+     {
+      "q": "What do we mean when we say a neural-network-based AI system is 'opaque'?",
+      "choices": [
+       "Its decisions cannot be explained, even when they affect people's lives",
+       "Its source code is proprietary and cannot be audited by regulators",
+       "It hides its training data to protect user privacy",
+       "Its accuracy cannot be measured without the original test set"
+      ],
+      "answer": 0,
+      "why": "Opaque means the system's decisions cannot be explained, which is why Explainable AI is an active research field."
+     },
+     {
+      "q": "Job applicants hide university names in white text so AI résumé screeners pass them along. What broader problem does this 'gaming' create for AI systems?",
+      "choices": [
+       "Algorithmic aversion, since applicants distrust the AI's judgment",
+       "The curse of dimensionality, since extra words add features",
+       "Irreducible error, since hiring outcomes are inherently random",
+       "Production data no longer matches the data the system was trained on"
+      ],
+      "answer": 3,
+      "why": "Once people know an AI makes the decisions, they game it, so production data stops matching the training data."
+     },
+     {
+      "q": "In a simulation, 75% of pilots followed an incorrect engine-failure warning and shut down the wrong engine. This illustrates which term from lecture?",
+      "choices": [
+       "Algorithmic aversion",
+       "Automation bias",
+       "Concept drift",
+       "The Matthew Effect"
+      ],
+      "answer": 1,
+      "why": "Automation bias is when humans take AI (or automated) results as gospel and just assume they are correct."
+     },
+     {
+      "q": "ChatGPT-4 alone scored 90% at diagnosing cases, but doctors assigned to use it scored only 76%. Which term describes experts discounting a correct AI?",
+      "choices": [
+       "Automation bias",
+       "Human oversight",
+       "Algorithmic aversion",
+       "The meme lottery"
+      ],
+      "answer": 2,
+      "why": "Algorithmic aversion is when experts refuse to believe AI systems even when the AI is right."
+     }
+    ]
+   },
+   {
+    "name": "Building AI Systems",
+    "questions": [
+     {
+      "q": "In the AI development workflow from lecture, determining the evaluation criteria/protocol belongs to which phase?",
+      "choices": [
+       "Development, alongside training the model",
+       "Pre-development, alongside framing the problem and exploring data",
+       "Deployment, alongside presenting to stakeholders",
+       "Maintenance, since evaluation only matters after launch"
+      ],
+      "answer": 1,
+      "why": "Pre-development covers framing the problem, collecting and exploring the data, and determining evaluation criteria."
+     },
+     {
+      "q": "A model trained on data collected in winter performs badly in summer. Which data question from lecture does this failure highlight?",
+      "choices": [
+       "Whether the data is structured or unstructured",
+       "Whether the data is missing values that need replacement",
+       "Whether the data is labeled or must be labeled by experts",
+       "How representative the data is of the situation where it will be used"
+      ],
+      "answer": 3,
+      "why": "A common error is using data collected in one situation and trying to apply it to another, so representativeness matters."
+     },
+     {
+      "q": "If 95% of students pass, why is an AI that marks 90% of students as 'probably passing' unimpressive despite its high accuracy?",
+      "choices": [
+       "It compares poorly to a simple baseline that reflects the class distribution",
+       "Its accuracy was measured on the training set instead of test data",
+       "Passing is a subjective label that cannot be predicted",
+       "It uses too few features to capture student behavior"
+      ],
+      "answer": 0,
+      "why": "Evaluation protocols need a baseline that accounts for the distribution; with 95% passing, 90% accuracy is worse than the baseline."
+     },
+     {
+      "q": "How can an unscrupulous developer use top-k accuracy measurements to give an inflated view of model performance?",
+      "choices": [
+       "Report precision instead of recall to hide false positives",
+       "Shrink the test set until the accuracy variance disappears",
+       "Raise k so the right label merely appearing in the top k counts as correct",
+       "Quantize the model so accuracy is computed on fewer bits"
+      ],
+      "answer": 2,
+      "why": "Companies can manipulate k to inflate metrics; for example, top-5 accuracy with only 10 possible classes is not very meaningful."
+     },
+     {
+      "q": "Which two steps did lecture list for converting original data into a format appropriate for a neural network?",
+      "choices": [
+       "Prune the data and quantize it",
+       "Vectorize the data (e.g., one-hot encoding) and normalize it",
+       "Label the data and split it across multiple GPUs",
+       "Anonymize the data and encrypt it"
+      ],
+      "answer": 1,
+      "why": "Preparing data means vectorizing it (one-hot categories, tokenizing text to embeddings) and normalizing it."
+     },
+     {
+      "q": "After model training is complete, which pair of techniques did lecture suggest for cutting resource needs during deployment?",
+      "choices": [
+       "Pruning near-zero nodes/edges and switching to lower-fidelity quantization",
+       "Adding more layers and increasing the learning rate",
+       "Collecting more training data and re-splitting the test set",
+       "Moving inference from GPUs back onto standard CPUs"
+      ],
+      "answer": 0,
+      "why": "Lecture suggests pruning nodes and edges that contribute little (then retraining) and using lower-fidelity numbers like float16 or int8 for inference."
+     },
+     {
+      "q": "What is the key difference in how a CPU core and a GPU execute instructions?",
+      "choices": [
+       "A CPU is analog while a GPU is digital",
+       "A GPU executes different instructions on each data item at once",
+       "A CPU has more cores, but each core is slower than a GPU core",
+       "A CPU core runs one instruction on one data item; a GPU runs one instruction on many"
+      ],
+      "answer": 3,
+      "why": "A CPU core is SISD (single instruction, single data) while a GPU is SIMD, applying the same instruction to many data items in parallel — ideal for tensor math."
+     },
+     {
+      "q": "Music tastes shift over time, so a recommendation model's performance decays after launch. What is this phenomenon called?",
+      "choices": [
+       "The curse of dimensionality",
+       "Feature engineering",
+       "Concept drift",
+       "Knowledge distillation"
+      ],
+      "answer": 2,
+      "why": "Concept drift is when the world changes after training, which is why deployed models must be monitored and retrained as performance drops."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "title": "CNNs, NLP & RNNs",
+  "color": "#ff9600",
+  "edge": "#cc7800",
+  "lessons": [
+   {
+    "name": "CNNs for Vision",
+    "questions": [
+     {
+      "q": "Compared to dense (fully-connected) networks, why are purpose-built networks like CNNs preferred for image data?",
+      "choices": [
+       "They can approximate any continuous function, unlike dense networks",
+       "They eliminate the need for labeled training data",
+       "They exploit the problem's structure, needing fewer parameters and learning faster",
+       "They avoid gradient descent and backpropagation entirely"
+      ],
+      "answer": 2,
+      "why": "Purpose-built networks exploit the characteristics of the problem space, requiring fewer parameters, learning quicker, and often needing smaller datasets."
+     },
+     {
+      "q": "In the computer vision tasks discussed, what does object detection add beyond image classification?",
+      "choices": [
+       "It locates specific objects in the image, typically with a bounding box",
+       "It breaks the image into segments representing different items",
+       "It generates brand-new images from a text description",
+       "It converts color images to greyscale before classifying"
+      ],
+      "answer": 0,
+      "why": "Object detection locates and identifies specific objects, typically using bounding boxes, building on top of image classification."
+     },
+     {
+      "q": "Which use of computer vision was discussed as problematic?",
+      "choices": [
+       "Camera autofocusing that detects faces",
+       "License plate recognition for bridge tolls",
+       "Google image search with shopping links",
+       "AI systems used to identify protestors and track minorities"
+      ],
+      "answer": 3,
+      "why": "The lecture flagged identifying protestors, tracking minorities, and misidentifying suspects as problematic uses of computer vision."
+     },
+     {
+      "q": "How does convolution solve the problem of translational invariance when identifying objects?",
+      "choices": [
+       "Each image region gets its own dedicated neurons and weights",
+       "The same kernel, with the same weights, is slid across the whole image",
+       "Images are rotated during training so all positions are seen",
+       "Pixel positions are randomized so location no longer matters"
+      ],
+      "answer": 1,
+      "why": "One kernel with identical parameters scans every patch of the image, so a pattern like a cat is detected no matter where it appears."
+     },
+     {
+      "q": "What determines what each filter/kernel in a CNN actually detects?",
+      "choices": [
+       "Training: kernels start randomized and are updated via gradient descent",
+       "The programmer hand-designs each kernel for a specific pattern",
+       "They are copied from measurements of neurons in the visual cortex",
+       "A fixed library of standard edge detectors chosen at setup"
+      ],
+      "answer": 0,
+      "why": "Kernel values start randomized and are learned by the network through gradient descent and backpropagation, not set by the programmer."
+     },
+     {
+      "q": "Which is a benefit of pooling layers in a CNN?",
+      "choices": [
+       "They add extra learnable parameters that boost accuracy",
+       "They increase the resolution of the feature maps",
+       "They shrink layers, cutting compute costs and generalizing over larger areas",
+       "They give the network rotational invariance"
+      ],
+      "answer": 2,
+      "why": "Pooling halves layer size, reducing computational and memory costs while generalizing features across larger receptive fields; it has no parameters."
+     },
+     {
+      "q": "In a CNN, what is the receptive field of a feature map value?",
+      "choices": [
+       "The set of all kernels applied at one layer",
+       "The area of the original image that the value corresponds to",
+       "The number of color channels in the input image",
+       "The 2x2 region examined by a pooling layer"
+      ],
+      "answer": 1,
+      "why": "The receptive field is the area on the original image that a given feature map value corresponds to."
+     },
+     {
+      "q": "Why does fine-tuning a CNN pre-trained on ImageNet work well for a new vision task?",
+      "choices": [
+       "The pre-trained model already contains every category you might need",
+       "Fine-tuning removes the need for any new labeled data",
+       "It replaces the lower layers while keeping the output layer",
+       "Lower layers detect generic features like lines, so mainly upper layers need adapting"
+      ],
+      "answer": 3,
+      "why": "Lower CNN levels look for generic features like horizontal and vertical lines that suit any vision task, so they need little or no retraining."
+     }
+    ]
+   },
+   {
+    "name": "NLP Foundations",
+    "questions": [
+     {
+      "q": "Which of these is a common AI NLP application discussed in lecture?",
+      "choices": [
+       "Image segmentation",
+       "Sentiment analysis of customer reviews",
+       "Camera autofocusing",
+       "License plate recognition"
+      ],
+      "answer": 1,
+      "why": "Sentiment analysis, spell/grammar checking, spam detection, and chatbots were listed as common NLP systems; the others are computer vision tasks."
+     },
+     {
+      "q": "Why is standard integer encoding of words a problem for neural networks?",
+      "choices": [
+       "Integers take too much memory compared to vectors",
+       "Neural networks cannot accept numeric inputs",
+       "Integer codes change every time the corpus changes",
+       "It imposes a fake ordering, so words with similar numbers seem similar"
+      ],
+      "answer": 3,
+      "why": "Networks learn statistical relationships, so integer codes create an artificial ordinal relationship, e.g. treating aardvark as similar to abacus."
+     },
+     {
+      "q": "What is a key benefit of subword tokenization, the scheme used by modern LLMs?",
+      "choices": [
+       "It can give some meaning to unseen words by breaking them into pieces",
+       "It guarantees the smallest possible set of token values",
+       "It makes documents shorter than word-level tokenization",
+       "It lets the model see individual characters for spell checking"
+      ],
+      "answer": 0,
+      "why": "Breaking words into components like 'Quick'+'ly' lets the model handle words it has not seen and make statistical inferences across subwords."
+     },
+     {
+      "q": "Why can't spell checking be done with word or subword tokenization?",
+      "choices": [
+       "Word vocabularies are too small to store correct spellings",
+       "Word tokens are too slow to process at scale",
+       "The model never sees individual characters, which spell checking requires",
+       "Spell checking requires 300-dimension embeddings"
+      ],
+      "answer": 2,
+      "why": "The handout states spell checking cannot be done unless characters are treated as individual tokens, i.e. character-level tokenization."
+     },
+     {
+      "q": "Why do we limit vocabulary size when using word-level tokenization?",
+      "choices": [
+       "Networks cannot handle more than 20,000 inputs",
+       "Rare words give no useful statistics, and each word adds dimensionality and cost",
+       "Smaller vocabularies eliminate out-of-vocabulary words",
+       "It prevents the model from learning biased words"
+      ],
+      "answer": 1,
+      "why": "A word seen once gives no statistical information, and every extra word increases dimensionality, requiring more data, memory, and processing."
+     },
+     {
+      "q": "From a representational standpoint, what does TF-IDF improve over Bag-of-Words?",
+      "choices": [
+       "It records word order within the document",
+       "It stores full semantic meaning for each word",
+       "It counts how many times each word occurs",
+       "It boosts words frequent in a document but rare in the corpus, muting 'the'"
+      ],
+      "answer": 3,
+      "why": "TF-IDF gives high values to words frequent in a document yet rare across the corpus, so common words like 'the' stop dominating; counts are Bag-of-Words."
+     },
+     {
+      "q": "What is the tradeoff of a 300-dimension word embedding versus a 50-dimension one?",
+      "choices": [
+       "More room to encode word relationships, but more memory and processing",
+       "Faster processing at the cost of lower accuracy",
+       "Fewer out-of-vocabulary words but slower tokenization",
+       "It removes bias from the training data but loses nuance"
+      ],
+      "answer": 0,
+      "why": "More dimensions give the algorithm more space to encode relationships between words, but cost more memory and processing."
+     },
+     {
+      "q": "How does Firth's 'You shall know a word by the company it keeps' relate to word embeddings?",
+      "choices": [
+       "Embeddings are hand-built by linguists studying word origins",
+       "Each word is stored with its dictionary definition",
+       "Vectors are learned from surrounding words; similar contexts give similar vectors",
+       "Words are grouped strictly by their part of speech"
+      ],
+      "answer": 2,
+      "why": "Word2Vec-style training pairs each center word with nearby context words, so words used in similar contexts end up with similar vectors."
+     }
+    ]
+   },
+   {
+    "name": "RNNs & Seq2Seq",
+    "questions": [
+     {
+      "q": "What distinguishes an RNN from a regular neural network?",
+      "choices": [
+       "It runs repeatedly over a sequence, feeding each step's hidden state to the next",
+       "It uses convolution to scan across the input",
+       "It has no hidden layers, only inputs and outputs",
+       "It processes the entire sequence in one parallel pass"
+      ],
+      "answer": 0,
+      "why": "An RNN is used sequentially for each item, taking two inputs: the current item and the hidden state produced by the previous iteration."
+     },
+     {
+      "q": "Besides NLP, which kinds of data are RNNs commonly used for?",
+      "choices": [
+       "Static single images",
+       "Unordered tabular records",
+       "Time-series data like temperatures or traffic, and DNA sequences",
+       "Randomly shuffled datasets"
+      ],
+      "answer": 2,
+      "why": "RNNs are commonly used for time-sequence data such as temperatures, traffic, audio/video, and have been applied to DNA sequences."
+     },
+     {
+      "q": "How are compact and unrolled RNN diagrams related?",
+      "choices": [
+       "The unrolled diagram shows a different, larger network",
+       "Same network: compact shows one reused unit; unrolled shows it across time steps",
+       "The compact diagram omits the hidden state",
+       "Unrolled diagrams show separate networks with different weights"
+      ],
+      "answer": 1,
+      "why": "Both depict the same network: the compact view emphasizes one reused component, while the unrolled view emphasizes processing step by step."
+     },
+     {
+      "q": "Why is it important that RNNs share the same parameter values across all time steps?",
+      "choices": [
+       "It lets each position learn its own specialized patterns",
+       "It doubles the network's capacity at every step",
+       "It removes the need for backpropagation",
+       "It is one component reused each step; unshared parameters mean independent networks"
+      ],
+      "answer": 3,
+      "why": "The unrolled RNN is not a series of independent components but the same component used over and over; without sharing it would fundamentally change."
+     },
+     {
+      "q": "Which Encoder-Decoder example would NOT count as Seq2Seq?",
+      "choices": [
+       "A CNN encodes an image and a decoder writes a caption",
+       "English text encoded, German translation decoded",
+       "English text encoded, an English summary decoded",
+       "A weather sequence encoded, a series of forecasts decoded"
+      ],
+      "answer": 0,
+      "why": "Seq2Seq requires a sequence in and a sequence out; an image input is not a sequence, while translation and summarization are sequence-to-sequence."
+     },
+     {
+      "q": "Why do long input sequences cause problems for RNNs?",
+      "choices": [
+       "The vocabulary grows with sequence length",
+       "RNNs can only accept a fixed number of tokens",
+       "Backpropagating through one pass per token makes long chains, vanishing gradients",
+       "Hidden state vectors become larger with each step"
+      ],
+      "answer": 2,
+      "why": "The RNN runs once per token, so loss must backpropagate through a very long chain, producing vanishing (or exploding) gradients."
+     },
+     {
+      "q": "In a standard RNN Encoder-Decoder, what is the context vector?",
+      "choices": [
+       "The list of every hidden state the encoder produced",
+       "A one-hot encoding of the first input token",
+       "The decoder's final output token",
+       "The encoder's final hidden state, summarizing the whole input sequence"
+      ],
+      "answer": 3,
+      "why": "The context vector is the final hidden state vector passed from encoder to decoder, acting as a summary and an information bottleneck."
+     },
+     {
+      "q": "What does an attention mechanism add to an RNN Encoder-Decoder?",
+      "choices": [
+       "It compresses the whole input into a single context vector",
+       "The decoder can access all encoder hidden states and learns which to focus on",
+       "It removes the need for an encoder network",
+       "It shares parameters across all time steps"
+      ],
+      "answer": 1,
+      "why": "With attention, all encoder hidden states are stored and the decoder learns which intermediate states to pay attention to."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "title": "Transformers & LLMs",
+  "color": "#ff4b4b",
+  "edge": "#ea2b2b",
+  "lessons": [
+   {
+    "name": "Meet the transformer",
+    "questions": [
+     {
+      "q": "Beyond chatbots like ChatGPT, which of these is a real-world LLM application mentioned in lecture?",
+      "choices": [
+       "Compressing image files for faster websites",
+       "Controlling robot motors in real time",
+       "Sentiment analysis and content moderation",
+       "Rendering 3D graphics for games"
+      ],
+      "answer": 2,
+      "why": "The lecture lists behind-the-scenes LLM uses like sentiment analysis, content moderation, and information extraction."
+     },
+     {
+      "q": "Which limitation of Recurrent Neural Networks (RNNs) do Transformers directly address?",
+      "choices": [
+       "Early-token information fades and gradients vanish over long input sequences",
+       "RNNs cannot use semantic word embeddings",
+       "RNNs require labeled training data while Transformers do not",
+       "RNNs use too much memory, growing as O(n^2) with input length"
+      ],
+      "answer": 0,
+      "why": "In RNNs early input information fades and gradients vanish on long sequences, which attention avoids by comparing every token directly to every other."
+     },
+     {
+      "q": "Why must the attention mechanism modify each token's original semantic embedding?",
+      "choices": [
+       "The initial embedding is too long and must be compressed",
+       "The initial lookup gives a word the same vector in any context, so 'bark' needs adjusting",
+       "Positional encoding erases the semantic information",
+       "Embeddings are random until attention assigns them meaning"
+      ],
+      "answer": 1,
+      "why": "'Bark' in 'dog bark' and 'tree bark' starts with identical vectors, so attention uses the other tokens to shift its value toward the right meaning."
+     },
+     {
+      "q": "Transformers provide major benefits over RNNs, but what is a downside?",
+      "choices": [
+       "They cannot be trained with gradient descent",
+       "They must process tokens one at a time, so they are slower",
+       "They can only handle inputs of a few hundred words",
+       "Memory and computing costs rise quadratically (n^2) with input length"
+      ],
+      "answer": 3,
+      "why": "Every token attends to every other token, so compute and memory grow as O(n^2), even though parallel processing keeps time manageable."
+     },
+     {
+      "q": "Why do LLMs typically learn their own semantic embeddings rather than using GloVe or Word2Vec?",
+      "choices": [
+       "GloVe and Word2Vec are copyrighted and cannot be reused",
+       "Pre-trained embeddings are too large to fit on GPUs",
+       "Learned embeddings match the model's subword vocabulary and training data",
+       "GloVe vectors only work with character-level tokenization"
+      ],
+      "answer": 2,
+      "why": "Building embeddings from scratch makes them perfectly tuned to the chosen subword vocabulary and training text, with no separate training task needed."
+     },
+     {
+      "q": "Why do Transformers need positional encoding?",
+      "choices": [
+       "The attention mechanism itself has no built-in sense of token order",
+       "Subword tokenization scrambles the order of the words",
+       "It compresses the input so longer texts fit in the context window",
+       "It prevents tokens from attending to themselves"
+      ],
+      "answer": 0,
+      "why": "Unlike CNNs and RNNs, attention does not encode position, so positional information is added to the embeddings manually."
+     },
+     {
+      "q": "Do Transformers exploit the linear sequence of text the way RNNs do?",
+      "choices": [
+       "Yes, they process tokens strictly left to right",
+       "Yes, attention weights are hardwired to favor neighboring tokens",
+       "No, word order is ignored entirely by Transformers",
+       "No — position info is added to embeddings, and the model learns to use it statistically"
+      ],
+      "answer": 3,
+      "why": "Transformers have no built-in sequence mechanism; positional encoding is added and the model figures out what to do with it during training."
+     },
+     {
+      "q": "In transformer attention, what do the learned W_K, W_Q, and W_V weight matrices do?",
+      "choices": [
+       "They add positional information to each embedding",
+       "They produce the Key, Query, and Value vectors that determine the attention weights",
+       "They normalize each token's values to mean 0 and variance 1",
+       "They convert subword tokens back into characters"
+      ],
+      "answer": 1,
+      "why": "W_K, W_Q, and W_V generate Key, Query, and Value vectors from each token, and those vectors determine the attention weights."
+     }
+    ]
+   },
+   {
+    "name": "Blocks, stacks & BERT",
+    "questions": [
+     {
+      "q": "Why do Transformer Blocks use multiple attention heads?",
+      "choices": [
+       "Extra heads reduce the memory needed for attention",
+       "Each head learns its own attention patterns, capturing different language relationships",
+       "Multiple heads let tokens skip the feed forward network",
+       "Heads are required to process inputs longer than one sentence"
+      ],
+      "answer": 1,
+      "why": "Like multiple CNN filters, each head has its own learnable weights and can key on different aspects, such as noun-verb or long-range links."
+     },
+     {
+      "q": "What is a purpose of the 'Add' (skip connection) part of Add and Normalize?",
+      "choices": [
+       "It doubles the embedding size for the next layer",
+       "It removes padding tokens before the feed forward network",
+       "It sorts the tokens back into their original order",
+       "It preserves the original input info and helps prevent vanishing or exploding gradients"
+      ],
+      "answer": 3,
+      "why": "The skip connection ensures original information is not lost on the forward pass and fights vanishing/exploding gradients on the backward pass."
+     },
+     {
+      "q": "What purpose does the Feed Forward Network serve in a Transformer Block?",
+      "choices": [
+       "It further processes each token, deciding how to combine the multi-head attention outputs",
+       "It lets each token attend to every other token",
+       "It generates the attention weight matrices",
+       "It adds positional encodings to the embeddings"
+      ],
+      "answer": 0,
+      "why": "The FFN is a small dense network that lets the system further decide how to combine the outputs of the multi-head attention mechanism."
+     },
+     {
+      "q": "In what part of the Transformer architecture do tokens actually interact with each other?",
+      "choices": [
+       "In the feed forward network",
+       "In the Add and Normalize layers",
+       "Only in the attention heads",
+       "In the tokenizer's embedding lookup"
+      ],
+      "answer": 2,
+      "why": "The lecture stresses that the attention heads are the only place tokens interact; other layers process each token individually."
+     },
+     {
+      "q": "Is a longer Context Window always better?",
+      "choices": [
+       "Yes — more tokens always improves output at no cost",
+       "No — attention calculations and memory grow as O(n^2) with window length",
+       "No — longer windows cause more vanishing gradients per token",
+       "Yes — larger windows reduce the number of layers needed"
+      ],
+      "answer": 1,
+      "why": "Every token computes attention with every other token, so calculations and memory rise quadratically and must fit on the GPU."
+     },
+     {
+      "q": "What does the word 'Bidirectional' in BERT's name refer to?",
+      "choices": [
+       "Every token sees the whole input at once, unlike GPT which only sees past tokens",
+       "BERT makes a forward pass then a backward pass, like a bidirectional RNN",
+       "BERT reads text left-to-right and then right-to-left in two stages",
+       "BERT sends gradients in both directions during training"
+      ],
+      "answer": 0,
+      "why": "BERT has no passes or direction — it processes all tokens in parallel and sees the entire sentence, unlike left-to-right GPT generation."
+     },
+     {
+      "q": "What is BERT's <CLS> token used for?",
+      "choices": [
+       "It marks where a sentence has been truncated",
+       "It masks a randomly chosen word during training",
+       "It accumulates info from the whole input; its embedding alone can drive classification",
+       "It signals the decoder to start generating text"
+      ],
+      "answer": 2,
+      "why": "The <CLS> token gathers information from the entire sequence, and for simple tasks its embedding is used while the rest is discarded."
+     },
+     {
+      "q": "How is BERT primarily trained?",
+      "choices": [
+       "Predicting the next word in a sequence, left to right",
+       "On English-German sentence pairs for translation",
+       "With labeled sentiment examples from movie reviews",
+       "Masked Language Modeling: predicting randomly masked tokens, plus Next Sentence Prediction"
+      ],
+      "answer": 3,
+      "why": "BERT randomly masks tokens and learns to predict them, with Next Sentence Prediction as a second task that has since fallen out of favor."
+     }
+    ]
+   },
+   {
+    "name": "GPT & full models",
+    "questions": [
+     {
+      "q": "What is the difference between Self-Attention and Cross-Attention?",
+      "choices": [
+       "Self: tokens attend within one sequence; cross: decoder tokens attend to encoder output",
+       "Self: attention within one head; cross: attention shared across heads",
+       "Self: used only in GPT; cross: used only in BERT",
+       "Self: attends to past tokens only; cross: attends to future tokens"
+      ],
+      "answer": 0,
+      "why": "Cross-attention relates encoder output to the decoder and exists only in full Seq2Seq models; BERT and GPT use only self-attention."
+     },
+     {
+      "q": "Which elements are removed from the original 'Attention Is All You Need' decoder to make a standalone GPT-like decoder?",
+      "choices": [
+       "The feed forward network and one Add & Normalize layer",
+       "The positional encoding and the softmax output layer",
+       "The encoder, its input connection, and the cross-attention mechanism",
+       "The masked self-attention and the <EOS> token"
+      ],
+      "answer": 2,
+      "why": "With no encoder there is nothing to cross-attend to, so the encoder, its connection, and cross-attention are all removed."
+     },
+     {
+      "q": "During text generation, what does a GPT model do after choosing the next token?",
+      "choices": [
+       "It stores the token in permanent memory and updates its weights",
+       "It appends the token to the input sequence and runs the model again",
+       "It sends the token to an encoder to build a context vector",
+       "It restarts generation from the original prompt alone"
+      ],
+      "answer": 1,
+      "why": "GPT is autoregressive: each output is tacked onto the input, and the new sequence is run through the model to pick the next token."
+     },
+     {
+      "q": "When does a GPT model stop generating tokens?",
+      "choices": [
+       "When the context window is exactly half full",
+       "After a fixed 512 tokens, always",
+       "When every vocabulary word drops below 2% probability",
+       "When it chooses an <EOS> end-of-sequence token"
+      ],
+      "answer": 3,
+      "why": "Generation continues until the model selects the <EOS> token, roughly where a human would naturally stop."
+     },
+     {
+      "q": "What does the 'temperature' setting control in a GPT-like decoder?",
+      "choices": [
+       "How much randomness is used when choosing the next token",
+       "How many transformer layers run at inference time",
+       "How quickly the learning rate decays during training",
+       "The maximum length of the context window"
+      ],
+      "answer": 0,
+      "why": "Low temperature makes output nearly deterministic while higher temperature adds randomness, often presented as more 'creativity'."
+     },
+     {
+      "q": "In 'Causal Language Modeling', what does 'Causal' refer to?",
+      "choices": [
+       "The model learns cause-and-effect facts about the physical world",
+       "Earlier tokens 'cause' later ones — the model only sees past tokens, unlike BERT",
+       "Losses are propagated causally from output back to input",
+       "Each attention head causes the next head to update"
+      ],
+      "answer": 1,
+      "why": "Previous words are treated as the cause of future words, so GPT attends only to past tokens while BERT sees the whole sequence."
+     },
+     {
+      "q": "Why does ChatGPT seem to 'remember' a conversation even though it is not learning?",
+      "choices": [
+       "Its weights update slightly after each user message",
+       "It saves facts into a permanent internal database",
+       "Attention scores are cached forever across sessions",
+       "Prior messages are re-fed as input context; long chats get truncated or compacted"
+      ],
+      "answer": 3,
+      "why": "No parameters change during inference — earlier messages are just included in the new input, and overly long chats fall out of the context window."
+     },
+     {
+      "q": "Why is data augmentation more problematic for NLP systems like GPT than for vision systems like CNNs?",
+      "choices": [
+       "Text files are too small to be worth augmenting",
+       "NLP models cannot be trained on modified data",
+       "Changing word order or swapping synonyms can break coherent, correct language and meaning",
+       "Images cannot be flipped or rotated without losing their labels"
+      ],
+      "answer": 2,
+      "why": "Unlike flipping or recoloring an image, altering text risks destroying grammatical correctness and meaning, and AI-generated data can cause model collapse."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "title": "Agents & the Future",
+  "color": "#00cd9c",
+  "edge": "#00a47d",
+  "lessons": [
+   {
+    "name": "Fine-Tuning LLMs",
+    "questions": [
+     {
+      "q": "Why do we add a task-specific head to BERT-type networks but not to GPT-type or Seq2Seq models?",
+      "choices": [
+       "BERT is too small to be fine-tuned without extra layers",
+       "GPT models cannot be fine-tuned after pre-training",
+       "BERT outputs vectors needing conversion; GPT and Seq2Seq already generate text",
+       "Heads are only used in computer vision, never in language models"
+      ],
+      "answer": 2,
+      "why": "BERT outputs hidden-state context vectors that need a task-specific network, while GPT and Seq2Seq generate text and are instead fine-tuned."
+     },
+     {
+      "q": "What is a key benefit of Domain Adaptation?",
+      "choices": [
+       "Further training on domain data strengthens domain terms and makes them likelier outputs",
+       "It removes the need for any pre-training",
+       "It shrinks the model so it runs on smaller hardware",
+       "It teaches the model to follow conversational instructions"
+      ],
+      "answer": 0,
+      "why": "Domain adaptation further trains a pre-trained model on domain-specific data, strengthening domain understanding and raising the likelihood of domain-specific outputs."
+     },
+     {
+      "q": "Why is Instruction Fine-Tuning needed for GPT-style models?",
+      "choices": [
+       "It gives the model access to real-time information",
+       "It converts the model from an encoder into a decoder",
+       "It reduces the number of parameters the model needs",
+       "Raw pre-trained GPT just predicts text and won't follow prompts or hold a conversation"
+      ],
+      "answer": 3,
+      "why": "Out-of-the-box GPT does not carry on a conversation, so instruction fine-tuning teaches it to follow structured prompts using instruction/response datasets."
+     },
+     {
+      "q": "Why do some experts hold that GPT-type models will always have hallucinations?",
+      "choices": [
+       "Their training data contains only false statements",
+       "They predict likely next words with no sense of truth, so confident falsehoods emerge",
+       "Their context windows are too small to hold facts",
+       "They deliberately invent facts to sound more creative"
+      ],
+      "answer": 1,
+      "why": "GPT-like systems work by next-word prediction with no sense of truth, only the likelihood of the next word."
+     },
+     {
+      "q": "Which is a benefit of Retrieval Augmented Generation (RAG) highlighted in the lecture?",
+      "choices": [
+       "It guarantees the model can never hallucinate",
+       "Updating the document database changes behavior without fine-tuning the model",
+       "It removes the need for a context window",
+       "It makes the model's parameters human-readable"
+      ],
+      "answer": 1,
+      "why": "With RAG, updating the documents updates the LLM's behavior without fine-tuning; it reduces (but does not eliminate) hallucinations."
+     },
+     {
+      "q": "In a RAG system, how are relevant text chunks found for a user prompt?",
+      "choices": [
+       "The prompt is embedded via a BERT-like model and similar vectors are found in a database",
+       "By keyword lookup on exact words in a traditional SQL table",
+       "The GPT model rewrites its own parameters to store the documents",
+       "A human tags each chunk with the questions it answers"
+      ],
+      "answer": 0,
+      "why": "The prompt is converted to an embedding vector (typically with a BERT-like model) and semantically similar chunks are retrieved from the vector database."
+     },
+     {
+      "q": "Why does Chain of Thought prompting improve LLM results?",
+      "choices": [
+       "It increases the model's parameter count during inference",
+       "It lets the model access external calculators",
+       "It shortens the context so the model reads less text",
+       "Autoregressive LLMs can't backtrack, so step-by-step output guides later tokens"
+      ],
+      "answer": 3,
+      "why": "LLMs generate autoregressively without backtracking, so producing a step-by-step plan first acts as a guide for the tokens that follow."
+     },
+     {
+      "q": "In RLHF, why is a separate reward model trained?",
+      "choices": [
+       "The reward model generates the final answers sent to users",
+       "It stores the correct answer to every possible question",
+       "Human evaluation is too slow to scale, so a model learns to predict human ratings",
+       "It replaces the optimizer used during pre-training"
+      ],
+      "answer": 2,
+      "why": "Manual human evaluation won't scale, so a reward model is trained on human ratings to predict how a human would score each response."
+     }
+    ]
+   },
+   {
+    "name": "AI Agents",
+    "questions": [
+     {
+      "q": "Which set of characteristics is commonly associated with AI Agents?",
+      "choices": [
+       "Always fully autonomous with no human approval ever",
+       "Tool access to the outside world, relatively long-lived runs, and varying autonomy",
+       "Only text chat with no access to external systems",
+       "Fixed one-second responses with no memory of any kind"
+      ],
+      "answer": 1,
+      "why": "Agents typically have tool access to the external world, run for minutes to hours, and vary from suggestion-only to acting without explicit approval."
+     },
+     {
+      "q": "What are the four major components of an agentic system described in lecture?",
+      "choices": [
+       "Orchestrator, Models, Tools, and Memory",
+       "Encoder, Decoder, Attention, and Softmax",
+       "Planner, Compiler, Debugger, and Database",
+       "Input, Hidden Layer, Output, and Loss Function"
+      ],
+      "answer": 0,
+      "why": "The lecture identified the Orchestrator (main driver), Models (LLMs), Tools, and Memory (short- and long-term) as the primary components."
+     },
+     {
+      "q": "In a ReAct agent, what is the basic control flow?",
+      "choices": [
+       "Write a complete plan first, then execute every step without checking",
+       "Map each input directly to an action with no reasoning or memory",
+       "Debate between two models until a judge picks an answer",
+       "Reason about tools to use, act by invoking them, observe results, repeat until solved"
+      ],
+      "answer": 3,
+      "why": "ReAct combines Reasoning and Action in a loop: decide tools, invoke them, evaluate the results, and repeat if the problem isn't solved."
+     },
+     {
+      "q": "What key insight motivates the Planner-Executor design pattern?",
+      "choices": [
+       "Plans are unnecessary if the executor model is powerful enough",
+       "Executors must always be larger models than planners",
+       "LLMs give better results when they concentrate on a single task at a time",
+       "Executing steps before planning saves compute"
+      ],
+      "answer": 2,
+      "why": "Because LLMs do better focusing on one task, the planner concentrates on strategy while the executor focuses on reliably running each step."
+     },
+     {
+      "q": "Compared to general-purpose models like ChatGPT, specialized agents typically...",
+      "choices": [
+       "Are cheaper, lower latency, easier to test, and more reliable within their design scope",
+       "Handle any request more reliably than general models",
+       "Cost more to run but never fail on unusual requests",
+       "Require the internet while general models never do"
+      ],
+      "answer": 0,
+      "why": "Specialized agents are cheaper, faster, easier to test, and more reliable for their task, but may fail badly outside their design parameters."
+     },
+     {
+      "q": "Why is direct invocation of a tool by an LLM frowned on?",
+      "choices": [
+       "LLMs are physically unable to format any tool call",
+       "Tool outputs would overload the context window",
+       "Non-LLM code should vet proposed calls to keep the LLM sandboxed within guardrails",
+       "Tools always run faster when called by a human"
+      ],
+      "answer": 2,
+      "why": "Best practice has the LLM only propose tool calls, with non-LLM agent code verifying parameters and guardrails before actually invoking the tool."
+     },
+     {
+      "q": "How is context engineering in agents different from a normal ChatGPT conversation?",
+      "choices": [
+       "Agents never use a context window at all",
+       "The orchestrator artificially constructs each LLM call's context, not the raw chat log",
+       "The user writes the system prompt directly",
+       "Context is stored permanently in the model's parameters"
+      ],
+      "answer": 1,
+      "why": "Instead of feeding the conversational history, the orchestrator manually builds each context window with structured, relevant information for the task."
+     },
+     {
+      "q": "Which is an example of an agent learning WITHOUT updating its parameter values?",
+      "choices": [
+       "Running additional gradient descent on new examples",
+       "Fine-tuning the model nightly on logged conversations",
+       "Distilling the model into a smaller student network",
+       "Storing past attempts and self-critiques in a vector database to inject into context"
+      ],
+      "answer": 3,
+      "why": "Non-parametric learning like Reflexion logs actions and self-critiques in a semantic database and retrieves them into the context window for future attempts."
+     }
+    ]
+   },
+   {
+    "name": "LLM Risks & Security",
+    "questions": [
+     {
+      "q": "Which psychological risks of conversational LLMs were highlighted in lecture?",
+      "choices": [
+       "Creating or reinforcing delusions, and giving advice that leads to harm or self-harm",
+       "Users becoming too distrustful to use any AI tools",
+       "Chatbots refusing to discuss emotional topics",
+       "Causing memory loss through excessive screen exposure"
+      ],
+      "answer": 0,
+      "why": "The two most common risks named were AI creating or reinforcing delusions and AI providing advice leading to harm, including self-harm."
+     },
+     {
+      "q": "Why do chatbots often develop sycophantic tendencies?",
+      "choices": [
+       "Their datasets contain no examples of disagreement",
+       "System prompts legally require agreement with users",
+       "Users prefer agreeable replies, so training like RLHF can reward validation",
+       "Sycophancy reduces the compute cost of each reply"
+      ],
+      "answer": 2,
+      "why": "Users prefer responses that reinforce their beliefs, so RLHF-style training may reward agreeable-seeming answers, over-tuning models toward agreement."
+     },
+     {
+      "q": "Why can longer conversations increase problematic chatbot behavior?",
+      "choices": [
+       "The model's parameters gradually change during a chat",
+       "The growing context window biases output and can overwhelm the model's base knowledge",
+       "Longer chats disable the system prompt automatically",
+       "Late-conversation tokens are dropped, deleting the safety rules"
+      ],
+      "answer": 1,
+      "why": "Long conversations key on the context window, which can bias output toward reinforcing earlier conversation instead of the model's parameter knowledge."
+     },
+     {
+      "q": "Why do AI agents pose bigger security risks than plain conversational chatbots?",
+      "choices": [
+       "Agents use larger models, which are inherently less safe",
+       "Chatbots cannot be prompt-injected at all",
+       "Agents always run without any human oversight",
+       "Tool access adds entry points like email and webpages and raises the damage possible"
+      ],
+      "answer": 3,
+      "why": "An agent's tool access both increases attack entry points (webpages, email) and increases potential damage, such as modifying or deleting files."
+     },
+     {
+      "q": "Why does prompt injection work against LLMs?",
+      "choices": [
+       "Tokens in the context window drive output, and LLMs barely separate data from commands",
+       "LLMs execute injected text as compiled machine code",
+       "Attackers can directly edit the model's parameters",
+       "Input validation makes models more suggestible"
+      ],
+      "answer": 0,
+      "why": "LLMs generate output from whatever tokens are in the context window and mostly don't distinguish data from instructions, so injected text can steer them."
+     },
+     {
+      "q": "What is indirect prompt injection?",
+      "choices": [
+       "Typing an attack straight into the standard user prompt box",
+       "Encoding output in base64 to slip past output filters",
+       "Hiding malicious instructions inside an email or webpage the system reads as data",
+       "Asking the model to role-play so it bypasses its guardrails"
+      ],
+      "answer": 2,
+      "why": "Indirect injection hides instructions inside outside data sources like emails or webpages, making any LLM that reads them a vulnerable access point."
+     },
+     {
+      "q": "Why does jailbreaking through role-play or emotional appeals often work?",
+      "choices": [
+       "Role-play mode turns off the context window",
+       "LLMs are trained to respond as humans would, and humans react to such appeals",
+       "Emotional words are always stripped by input filters",
+       "Fiction requests get routed to an unaligned backup model"
+      ],
+      "answer": 1,
+      "why": "LLMs are trained to respond as a human would to input tokens, and since humans respond differently to emotional or fictional framing, so do LLMs."
+     },
+     {
+      "q": "What is the basic idea behind sandbox security for AI agents?",
+      "choices": [
+       "Test the agent only on synthetic data before release",
+       "Run the model slowly so attacks take longer",
+       "Encrypt the system prompt so it can't be leaked",
+       "Limit what tools, files, and network the agent can touch so damage stays contained"
+      ],
+      "answer": 3,
+      "why": "Sandboxing restricts agent access (e.g., limited directories, read-only email, least privilege) so a compromised agent's potential damage is contained."
+     }
+    ]
+   },
+   {
+    "name": "AI Issues & Future",
+    "questions": [
+     {
+      "q": "Why is it difficult to eliminate bias from AI systems entirely?",
+      "choices": [
+       "Bias only comes from programmers' explicit rules",
+       "Even with gender or race removed, models find proxies like sports or colleges attended",
+       "Datasets are always perfectly balanced already",
+       "Models forget bias if trained for a few extra epochs"
+      ],
+      "answer": 1,
+      "why": "Removing gender or race features doesn't help because the system finds proxies for them, such as softball vs. baseball or women's colleges."
+     },
+     {
+      "q": "What does it mean that AI systems learn whatever bias exists in a dataset?",
+      "choices": [
+       "Models only learn biases written into their loss functions",
+       "Bias appears only when datasets are very small",
+       "Datasets cannot influence a model after pre-training ends",
+       "Resume screeners trained on past hires reinforce existing gender and race imbalances"
+      ],
+      "answer": 3,
+      "why": "Systems trained on historical data, like resume screeners based on previous successful employees, naturally reinforce the biases already present."
+     },
+     {
+      "q": "Per lecture, what is a personal-level risk of AI voice replication and fake video?",
+      "choices": [
+       "Spear phishing that mimics family members using detailed knowledge of the target",
+       "Fake media only affects celebrities, not private individuals",
+       "Voices can only be cloned from professional studio recordings",
+       "Fake videos are already trivially detected by software"
+      ],
+      "answer": 0,
+      "why": "AI fakes can mimic family members and use leaked personal information, enabling convincing targeted fraud like spear phishing at scale."
+     },
+     {
+      "q": "Which techniques for AI alignment were covered in lecture?",
+      "choices": [
+       "The Paperclip Scenario and p(Doom) estimation",
+       "Beam search and top-k sampling",
+       "RLHF, improved and broader datasets, and red teaming",
+       "Model collapse and knowledge distillation"
+      ],
+      "answer": 2,
+      "why": "The lecture's alignment techniques were RLHF, improving datasets with broader data, and red teams trying to crack the model's protections."
+     },
+     {
+      "q": "What does it mean that AI Scaling Laws are empirical, not theoretical?",
+      "choices": [
+       "They're based on observed past performance, so future gains aren't guaranteed",
+       "They were mathematically proven from first principles",
+       "They apply only to hardware, never to models",
+       "They guarantee performance doubles every two years"
+      ],
+      "answer": 0,
+      "why": "Scaling laws are based on observations of previous models with no theoretical basis, so past performance is no guarantee of future results."
+     },
+     {
+      "q": "What is the idea behind inference-time compute?",
+      "choices": [
+       "Add more parameters while the model is answering",
+       "Retrain the model between every user question",
+       "Cache old answers so no computation is needed",
+       "Spend extra computation refining and evaluating answers instead of replying instantly"
+      ],
+      "answer": 3,
+      "why": "Instead of generating an immediate answer, the model allocates extra compute time (e.g., beam search, self-checking, debate) to refine the response."
+     },
+     {
+      "q": "Why is a Mixture of Experts model more efficient than a monolithic LLM?",
+      "choices": [
+       "Every expert answers every question and results are averaged",
+       "All experts share one tiny set of parameters",
+       "A router activates only some experts, so few parameters are used per question",
+       "It skips training entirely by copying other models"
+      ],
+      "answer": 2,
+      "why": "A controlling/routing mechanism picks which experts to use, giving a large-parameter model without using all its parameters on every problem."
+     },
+     {
+      "q": "What advantage do Neuro-Symbolic systems have over purely neural networks?",
+      "choices": [
+       "They need no training data of any kind",
+       "Outputs like programs or proofs can be formally verified and are easier to understand",
+       "They eliminate all statistical inference",
+       "They always explain how they generated the solution"
+      ],
+      "answer": 1,
+      "why": "Artifacts like computer programs or mathematical proofs can be formally verified and followed, supporting explainable results."
+     }
+    ]
+   }
+  ]
+ }
+];
+
+/* ============ HELPERS ============ */
+const $ = id => document.getElementById(id);
+function esc(s){ const d=document.createElement("div"); d.textContent=String(s); return d.innerHTML; }
+function shuffled(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ============ STATE ============ */
+const SAVE_KEY = "cs106ea-prep-v2";
+const DEFAULTS = { user:null, done:{}, gems:0, missed:[] };
+let S;
+try { S = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(SAVE_KEY) || "{}")); }
+catch(e){ S = Object.assign({}, DEFAULTS); }
+if(typeof S.gems !== "number" && typeof S.xp === "number") S.gems = Math.round(S.xp/10); // migrate old XP saves
+delete S.xp; delete S.streakDays;
+if(!Array.isArray(S.missed)) S.missed = [];
+if(typeof S.done !== "object" || !S.done) S.done = {};
+if(typeof S.gems !== "number" || !isFinite(S.gems)) S.gems = 0;
+function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
+
+// When the course content changes shape, old lesson indexes and missed
+// questions point at the wrong material — reset path progress, keep
+// the user and their diamonds.
+const COURSE_VERSION = 2;
+if(S.courseVer !== COURSE_VERSION){
+  S.done = {}; S.missed = []; S.courseVer = COURSE_VERSION;
+  save();
+}
+
+/* ============ SIGN-IN ============ */
+const EMAIL_RE = /^[^\s@]+@([a-z0-9-]+\.)*stanford\.edu$/i;
+function trySignIn(){
+  const nick = $("nick").value.trim();
+  const email = $("email").value.trim();
+  const err = $("gate-err");
+  $("nick").classList.remove("bad"); $("email").classList.remove("bad");
+  if(!nick){ err.textContent = "Pick a nickname first!"; $("nick").classList.add("bad"); $("nick").focus(); return; }
+  if(!EMAIL_RE.test(email)){
+    err.textContent = email.includes("@")
+      ? "Hmm — that's not a stanford.edu address. Cardinal only! 🌲"
+      : "That doesn't look like an email address.";
+    $("email").classList.add("bad"); $("email").focus(); return;
+  }
+  err.textContent = "";
+  S.user = { nick, email };
+  save();
+  $("gate").classList.remove("open");
+  renderAll();
+}
+function signOut(){
+  if(!confirm("Sign out? Your progress stays saved on this device.")) return;
+  S.user = null; save();
+  openGate();
+}
+function openGate(){
+  $("gate").classList.add("open");
+  $("nick").value = S.user ? S.user.nick : "";
+  $("email").value = S.user ? S.user.email : "";
+}
+["nick","email"].forEach(id=>{
+  $(id).addEventListener("keydown", e=>{ if(e.key==="Enter") trySignIn(); });
+  $(id).addEventListener("input", ()=>{ $(id).classList.remove("bad"); $("gate-err").textContent=""; });
+});
+
+/* ============ PROGRESS MODEL ============ */
+function lessonKey(u,l){ return u+"-"+l; }
+function isDone(u,l){ return !!S.done[lessonKey(u,l)]; }
+function nextLesson(){
+  for(let u=0;u<COURSE.length;u++)
+    for(let l=0;l<COURSE[u].lessons.length;l++)
+      if(!isDone(u,l)) return {u,l};
+  return null;
+}
+function isNext(u,l){ const n=nextLesson(); return !!n && n.u===u && n.l===l; }
+function totalLessons(){ return COURSE.reduce((a,u)=>a+u.lessons.length,0); }
+function doneLessons(){
+  let n=0;
+  COURSE.forEach((unit,u)=>unit.lessons.forEach((_,l)=>{ if(isDone(u,l)) n++; }));
+  return n;
+}
+
+/* ============ ICONS ============ */
+const ICONS = {
+  star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2z"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3H9z"/></svg>',
+  gem:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 3h11L22 9 12 21 2 9l4.5-6z"/><path d="M8 5.2 6.2 8.6l5.8 9.9 5.8-9.9L16 5.2l-4 1.4-4-1.4z" fill="rgba(255,255,255,.28)"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z"/></svg>',
+};
+
+/* ============ RENDER ============ */
+function renderAll(){ renderStats(); renderPath(); renderPractice(); renderProfile(); updateBadges(); }
+
+function renderStats(){
+  $("greet").textContent = S.user ? "Let's go, "+S.user.nick+"! Exam "+EXAM.when+"." : "";
+  $("statbar").innerHTML =
+    '<div class="stat gem" title="Diamonds — earn one per correct answer">'+ICONS.gem+' <span>'+S.gems+'</span></div>';
+  const days = Math.max(0, Math.ceil((new Date(EXAM.date) - new Date()) / 864e5));
+  const done = doneLessons(), total = totalLessons();
+  const pct = total ? Math.round(done/total*100) : 0;
+  $("rail-exam").innerHTML =
+    '<h3>'+esc(EXAM.name)+'</h3><p>'+esc(EXAM.when)+'</p>'+
+    '<p class="countdown" style="margin-top:6px">'+days+' day'+(days===1?"":"s")+' left</p>'+
+    '<div class="meter"><div style="width:'+pct+'%"></div></div>'+
+    '<div class="meter-cap"><span>'+done+' / '+total+' lessons</span><span>'+pct+'%</span></div>';
+}
+
+function updateBadges(){
+  document.querySelectorAll("[data-badge]").forEach(b=>{
+    b.hidden = S.missed.length===0;
+    b.textContent = S.missed.length;
+  });
+}
+
+function renderPath(){
+  const host = $("tab-learn");
+  host.innerHTML = "";
+  const amp = Math.min(64, (Math.min(innerWidth,600) - 90) / 2);
+  COURSE.forEach((unit,u)=>{
+    const doneInUnit = unit.lessons.filter((_,l)=>isDone(u,l)).length;
+    const banner = document.createElement("div");
+    banner.className = "unit-banner";
+    banner.style.background = unit.color;
+    banner.style.boxShadow = "0 4px 0 "+unit.edge;
+    banner.innerHTML = '<div class="kicker">Unit '+(u+1)+'</div><h2>'+esc(unit.title)+'</h2>'+
+      '<div class="done-count">'+doneInUnit+' of '+unit.lessons.length+' lessons</div>';
+    host.appendChild(banner);
+    const nodes = document.createElement("div");
+    nodes.className = "nodes";
+    unit.lessons.forEach((lesson,l)=>{
+      const row = document.createElement("div");
+      row.className = "node-row";
+      row.style.transform = "translateX("+([0,-amp,0,amp][l%4])+"px)";
+      const done = isDone(u,l), next = isNext(u,l);
+      const wrap = document.createElement("div");
+      wrap.className = "node-wrap"+(next?" next":"");
+      if(next) wrap.style.setProperty("--pulse", unit.color+"66");
+      if(next){
+        const deg = (unit.lessons.length ? doneInUnit/unit.lessons.length : 0) * 360;
+        if(deg > 0){
+          const ring = document.createElement("div");
+          ring.className = "ring";
+          ring.style.background = "conic-gradient("+unit.color+" "+deg+"deg, transparent "+deg+"deg)";
+          wrap.appendChild(ring);
+        }
+      }
+      const btn = document.createElement("button");
+      btn.className = "node "+(done?"done":next?"next":"locked");
+      if(next){
+        btn.style.background = unit.color;
+        btn.style.setProperty("--node-edge", unit.edge);
+      }
+      btn.innerHTML = (done?ICONS.check:next?ICONS.star:ICONS.lock) +
+        (next ? '<span class="start-pill" style="color:'+unit.color+'">Start</span>' : '');
+      btn.setAttribute("aria-label", lesson.name + (done?" — complete, tap to redo":next?" — start":" — locked"));
+      if(done || next) btn.onclick = ()=>startLesson(u,l);
+      wrap.appendChild(btn);
+      row.appendChild(wrap);
+      const label = document.createElement("div");
+      label.className = "node-label";
+      label.textContent = lesson.name;
+      row.appendChild(label);
+      nodes.appendChild(row);
+    });
+    host.appendChild(nodes);
+  });
+}
+
+function renderPractice(){
+  const host = $("tab-practice");
+  const n = S.missed.length;
+  let html = '<h1>Practice</h1>';
+  if(n){
+    html += '<p class="muted" style="margin:0 0 14px">You have <strong>'+n+' mistake'+(n===1?"":"s")+'</strong> to clear. Answer them right and they disappear.</p>'+
+      '<button class="btn btn-blue" style="margin-bottom:10px" onclick="startMistakes()">Fix my mistakes ('+n+')</button>';
+  } else {
+    html += '<p class="muted" style="margin:0 0 14px">No mistakes to fix — anything you miss shows up here.</p>';
+  }
+  html += '<button class="btn btn-ghost" style="margin-bottom:22px" onclick="startRandom()">Random practice (10 questions)</button>';
+  if(n){
+    html += '<h1 style="font-size:18px">Your mistakes</h1>' + S.missed.map(m=>
+      '<div class="review-item"><p class="q">'+esc(m.q)+'</p><p class="a">✓ '+esc(m.a)+'</p>'+
+      (m.why?'<p class="why">'+esc(m.why)+'</p>':'')+'</div>').join("");
+  }
+  host.innerHTML = html;
+}
+
+function statTile(icClass, icon, num, label){
+  return '<div class="stile"><div class="ic '+icClass+'">'+icon+'</div>'+
+    '<div><div class="num">'+num+'</div><div class="lbl">'+label+'</div></div></div>';
+}
+function renderProfile(){
+  const u = S.user || {nick:"—", email:"—"};
+  const done = doneLessons(), total = totalLessons();
+  const pct = total ? Math.round(done/total*100) : 0;
+  $("tab-profile").innerHTML =
+    '<div class="profile-head">'+
+      '<div class="avatar">'+esc((u.nick||"?").trim().charAt(0).toUpperCase())+'</div>'+
+      '<div><h2>'+esc(u.nick)+'</h2><p>'+esc(u.email)+'</p></div>'+
+    '</div>'+
+    '<div class="sec-label">Your stats</div>'+
+    '<div class="stats-grid">'+
+      statTile("ic-blue", ICONS.gem, S.gems, "Diamonds")+
+      statTile("ic-green", ICONS.check, done+" / "+total, "Lessons done")+
+      statTile("ic-red", ICONS.x, S.missed.length, "To fix")+
+    '</div>'+
+    '<div class="sec-label">Course progress</div>'+
+    '<div class="card"><div class="meter"><div style="width:'+pct+'%"></div></div>'+
+    '<div class="meter-cap"><span>'+pct+'% of the path</span><span>'+esc(EXAM.when)+'</span></div></div>'+
+    '<button class="btn btn-ghost" style="margin-top:22px" onclick="signOut()">Sign out</button>'+
+    '<button class="btn btn-ghost" style="margin-top:10px; color:var(--red)" onclick="resetAll()">Reset all progress</button>';
+}
+function resetAll(){
+  if(!confirm("Reset all progress? This can't be undone.")) return;
+  S = Object.assign({}, DEFAULTS, {user:S.user});
+  save(); renderAll();
+}
+
+/* ============ TABS ============ */
+function showTab(name){
+  ["learn","practice","profile"].forEach(t=>{ $("tab-"+t).hidden = (t!==name); });
+  document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active", b.dataset.tab===name));
+  if(name==="practice") renderPractice();
+  if(name==="profile") renderProfile();
+}
+
+/* ============ QUIZ ENGINE ============ */
+let Q = null;
+
+function startLesson(u,l){
+  const qs = shuffled(COURSE[u].lessons[l].questions);
+  Q = { questions:qs, index:0, hearts:5, correct:0, wrong:0,
+        picked:-1, checked:false, lessonU:u, lessonL:l, mode:"lesson" };
+  openQuiz();
+}
+function startRandom(){
+  let pool = [];
+  const nxt = nextLesson();
+  COURSE.forEach((unit,u)=>unit.lessons.forEach((les,l)=>{
+    if(isDone(u,l) || (nxt && nxt.u===u && nxt.l===l)) pool = pool.concat(les.questions);
+  }));
+  if(!pool.length) pool = COURSE[0].lessons[0].questions;
+  Q = { questions:shuffled(pool).slice(0,10), index:0, hearts:5, correct:0, wrong:0,
+        picked:-1, checked:false, lessonU:-1, lessonL:-1, mode:"practice" };
+  openQuiz();
+}
+function startMistakes(){
+  if(!S.missed.length) return;
+  const all = [];
+  COURSE.forEach(unit=>unit.lessons.forEach(les=>all.push(...les.questions)));
+  const qs = S.missed.map(m => all.find(x=>x.q===m.q))
+                     .filter(Boolean)
+                     .concat(S.missed.filter(m=>!all.some(x=>x.q===m.q))
+                       .map(m=>({q:m.q, choices:[m.a,"—","—","—"], answer:0, why:m.why})));
+  Q = { questions:shuffled(qs).slice(0,15), index:0, hearts:5, correct:0, wrong:0,
+        picked:-1, checked:false, lessonU:-1, lessonL:-1, mode:"mistakes" };
+  openQuiz();
+}
+function openQuiz(){
+  $("quiz").classList.add("open");
+  renderQuestion();
+}
+function quitQuiz(){
+  if(Q && Q.index>0 && !confirm("Quit this lesson? Progress in it won't count.")) return;
+  $("quiz").classList.remove("open");
+  Q = null;
+}
+function setProgress(){
+  $("pfill").style.width = Q ? (Q.index / Q.questions.length * 100)+"%" : "0%";
+}
+function renderQuestion(){
+  const cur = Q.questions[Q.index];
+  setProgress();
+  $("qhearts").textContent = Q.hearts;
+  $("heartbox").classList.remove("lost");
+  $("qtype").textContent = Q.mode==="mistakes" ? "Fix your mistake" : "Select the correct answer";
+  $("qtext").textContent = cur.q;
+  const host = $("choices");
+  host.className = "choices";
+  host.innerHTML = "";
+  cur.choices.forEach((c,i)=>{
+    const b = document.createElement("button");
+    b.className = "choice";
+    const key = document.createElement("span"); key.className="key"; key.textContent = i+1;
+    const txt = document.createElement("span"); txt.textContent = c;
+    b.append(key, txt);
+    b.onclick = ()=>{
+      if(!Q || Q.checked) return;
+      Q.picked = i;
+      host.querySelectorAll(".choice").forEach((x,xi)=>x.classList.toggle("picked", xi===i));
+      $("checkbtn").disabled = false;
+    };
+    host.appendChild(b);
+  });
+  Q.picked = -1; Q.checked = false;
+  $("qfooter").className = "quiz-footer";
+  $("verdict").innerHTML = "";
+  const cb = $("checkbtn");
+  cb.textContent = "Check"; cb.disabled = true; cb.className = "btn btn-green";
+}
+function onCheck(){
+  if(!Q) return;
+  if(!Q.checked){
+    Q.checked = true;
+    const cur = Q.questions[Q.index];
+    const ok = Q.picked === cur.answer;
+    const host = $("choices");
+    host.querySelectorAll(".choice").forEach((x,xi)=>{
+      x.disabled = true;
+      if(xi===cur.answer) x.classList.add("reveal-ok");
+      else if(xi===Q.picked && !ok) x.classList.add("reveal-bad");
+    });
+    const f = $("qfooter"), v = $("verdict");
+    if(ok){
+      Q.correct++;
+      f.classList.add("ok");
+      v.innerHTML = '<div class="vicon">✅</div><div><h4>Nice!</h4><p></p></div>';
+      v.querySelector("p").textContent = cur.why || "";
+      // clearing a mistake
+      const before = S.missed.length;
+      S.missed = S.missed.filter(m=>m.q!==cur.q);
+      if(S.missed.length!==before){ save(); updateBadges(); }
+    } else {
+      Q.wrong++;
+      Q.hearts = Math.max(0, Q.hearts-1);
+      f.classList.add("bad");
+      host.classList.add("wrong");
+      $("heartbox").classList.add("lost");
+      v.innerHTML = '<div class="vicon">❌</div><div><h4>Correct answer:</h4><p></p></div>';
+      v.querySelector("p").textContent = cur.choices[cur.answer] + (cur.why ? " — " + cur.why : "");
+      if(!S.missed.some(m=>m.q===cur.q))
+        S.missed.push({q:cur.q, a:cur.choices[cur.answer], why:cur.why||""});
+      save(); updateBadges();
+    }
+    $("qhearts").textContent = Q.hearts;
+    const cb = $("checkbtn");
+    cb.textContent = "Continue"; cb.className = ok ? "btn btn-green" : "btn btn-red";
+    if(!ok && Q.hearts===0){ cb.textContent = "See results"; }
+    return;
+  }
+  if(Q.hearts===0 && Q.mode==="lesson"){ finishQuiz(true); return; }
+  Q.index++;
+  setProgress();
+  if(Q.index >= Q.questions.length) finishQuiz(false);
+  else renderQuestion();
+}
+
+/* ============ RESULTS ============ */
+function finishQuiz(failed){
+  const total = Q.correct + Q.wrong;
+  const acc = total ? Math.round(Q.correct/total*100) : 0;
+  const gems = failed ? Math.floor(Q.correct/2) : Q.correct + (Q.wrong===0 ? 3 : 0);
+  S.gems += gems;
+  if(!failed && Q.mode==="lesson") S.done[lessonKey(Q.lessonU,Q.lessonL)] = true;
+  save();
+  const mode = Q.mode;
+  Q = null;
+  $("quiz").classList.remove("open");
+
+  $("res-emoji").textContent = failed ? "💔" : acc===100 ? "🏆" : acc>=70 ? "🎉" : "📚";
+  const title = $("res-title");
+  title.classList.toggle("fail", !!failed);
+  title.textContent = failed ? "Out of hearts!" :
+    mode==="mistakes" ? "Mistakes crushed!" :
+    mode==="practice" ? "Practice complete!" : "Lesson complete!";
+  $("res-sub").textContent = failed ? "No worries — hit the lesson again, it doesn't count against you." :
+    acc===100 ? "Perfect — 3 bonus diamonds!" :
+    "Missed questions were added to Practice.";
+  $("res-acc").textContent = acc+"%";
+  $("res-acc-chip").classList.toggle("low", acc<70);
+  $("results").classList.add("open");
+
+  // diamond count-up
+  const gemEl = $("res-gems");
+  if(REDUCED || gems===0){ gemEl.textContent = "+"+gems; }
+  else {
+    const t0 = performance.now(), dur = 700;
+    (function tick(t){
+      const p = Math.min(1,(t-t0)/dur), eased = 1-Math.pow(1-p,3);
+      gemEl.textContent = "+"+Math.round(gems*eased);
+      if(p<1) requestAnimationFrame(tick);
+    })(t0);
+  }
+  if(!failed && acc>=70) confettiBurst();
+}
+function closeResults(){
+  $("results").classList.remove("open");
+  renderAll();
+  showTab("learn");
+}
+
+/* ============ CONFETTI ============ */
+function confettiBurst(){
+  if(REDUCED) return;
+  const cv = $("confetti");
+  cv.width = cv.offsetWidth; cv.height = cv.offsetHeight;
+  const ctx = cv.getContext("2d");
+  const colors = ["#58cc02","#1cb0f6","#ffc800","#ff4b4b","#ce82ff","#ff9600"];
+  const P = Array.from({length:120}, ()=>({
+    x: cv.width/2 + (Math.random()-.5)*120,
+    y: cv.height*0.35,
+    vx:(Math.random()-.5)*9, vy:-(Math.random()*9+4),
+    w:5+Math.random()*6, h:8+Math.random()*8,
+    r:Math.random()*Math.PI, vr:(Math.random()-.5)*.3,
+    c:colors[Math.floor(Math.random()*colors.length)],
+  }));
+  const t0 = performance.now();
+  (function frame(t){
+    const el = t-t0;
+    ctx.clearRect(0,0,cv.width,cv.height);
+    P.forEach(p=>{
+      p.vy += .18; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+      ctx.globalAlpha = Math.max(0, 1 - el/2200);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    });
+    if(el < 2300 && $("results").classList.contains("open")) requestAnimationFrame(frame);
+    else ctx.clearRect(0,0,cv.width,cv.height);
+  })(t0);
+}
+
+/* ============ KEYBOARD ============ */
+document.addEventListener("keydown", e=>{
+  if($("results").classList.contains("open")){
+    if(e.key==="Enter"){ e.preventDefault(); closeResults(); }
+    return;
+  }
+  if(!$("quiz").classList.contains("open") || !Q) return;
+  if(e.key>="1" && e.key<="4" && !Q.checked){
+    const btns = document.querySelectorAll("#choices .choice");
+    const i = +e.key-1; if(btns[i]) btns[i].click();
+  }
+  if(e.key==="Enter" && !$("checkbtn").disabled){ e.preventDefault(); onCheck(); }
+  if(e.key==="Escape") quitQuiz();
+});
+addEventListener("resize", ()=>{ if(!$("quiz").classList.contains("open")) renderPath(); });
+
+/* ============ BOOT ============ */
+if(S.user){ renderAll(); }
+else { renderAll(); openGate(); }
+</script>
