@@ -4054,7 +4054,13 @@ const ICONS = {
 };
 
 /* ============ RENDER ============ */
-function renderAll(){ renderStats(); renderPath(); renderPractice(); renderProfile(); updateBadges(); }
+// Each section renders independently — one failure can't blank the app
+function renderAll(){
+  [renderStats, renderPath, renderPractice, renderProfile, updateBadges].forEach(f=>{
+    try{ f(); }
+    catch(e){ track("js_error", { fn: f.name, msg: String(e && e.message).slice(0,180) }); }
+  });
+}
 
 // Countdown to the exam: "2d 7h" until the last day, then "7h 32m"
 function examCountdown(){
@@ -4169,8 +4175,8 @@ function renderProfile(){
   const pct = total ? Math.round(done/total*100) : 0;
   $("tab-profile").innerHTML =
     '<div class="profile-head">'+
-      '<div class="avatar">'+esc((u.nick||"?").trim().charAt(0).toUpperCase())+'</div>'+
-      '<div><h2 style="user-select:none; cursor:default" onclick="nickTap()">'+esc(u.nick)+
+      '<div class="avatar" style="user-select:none" onclick="avatarTap()">'+esc((u.nick||"?").trim().charAt(0).toUpperCase())+'</div>'+
+      '<div><h2>'+esc(u.nick)+
       ' <button class="editnick" onclick="editNick(event)" aria-label="Edit name" title="Edit name">✏️</button></h2>'+
       '<p>'+esc(u.email)+'</p></div>'+
     '</div>'+
@@ -4198,14 +4204,14 @@ function editNick(e){
   track("nick_change", { nick });
   renderAll();
 }
-// Hidden escape hatch: tapping the profile name 10 times in quick
+// Hidden escape hatch: tapping the profile picture 10 times in quick
 // succession reveals the reset button for 10 seconds.
-let nickTaps = 0, nickTapTimer = null;
-function nickTap(){
-  clearTimeout(nickTapTimer);
-  nickTapTimer = setTimeout(()=>{ nickTaps = 0; }, 1500);
-  if(++nickTaps >= 10){
-    nickTaps = 0;
+let avatarTaps = 0, avatarTapTimer = null;
+function avatarTap(){
+  clearTimeout(avatarTapTimer);
+  avatarTapTimer = setTimeout(()=>{ avatarTaps = 0; }, 1500);
+  if(++avatarTaps >= 10){
+    avatarTaps = 0;
     const b = $("resetbtn");
     if(b){
       b.hidden = false;
@@ -4455,8 +4461,15 @@ setInterval(()=>{ if(!$("quiz").classList.contains("open")) renderStats(); }, 60
 
 /* ============ BOOT ============ */
 track("page_view", { signed_in: !!S.user });
-if(S.user){ renderAll(); }
-else { renderAll(); openGate(); }
+// gate first: even if rendering fails, a new visitor sees the sign-in
+if(!S.user) openGate();
+renderAll();
+// surface breakage on visitors' devices in the analytics
+addEventListener("error", e=>track("js_error", {
+  msg: String(e.message||"").slice(0,180),
+  at: String(e.filename||"").split("/").pop()+":"+(e.lineno||0) }));
+addEventListener("unhandledrejection", e=>track("js_error", {
+  msg: "promise: "+String((e.reason && e.reason.message) || e.reason).slice(0,160) }));
 
 // Link up already-signed-in sessions from before accounts existed, and
 // pull any progress made on other devices since last visit.
