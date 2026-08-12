@@ -247,6 +247,11 @@
     position:fixed; right:16px; bottom:12px; z-index:5; pointer-events:none;
     font-size:12.5px; font-weight:700; color:var(--ink-faint);
   }
+  .credit a{
+    pointer-events:auto; color:inherit; text-decoration:underline;
+    text-underline-offset:2px; transition:color .15s;
+  }
+  .credit a:hover{color:var(--blue)}
   @media (max-width: 920px){ .rail{display:none} }
   @media (max-width: 700px){
     .side{display:none}
@@ -460,7 +465,7 @@
   </aside>
 </div>
 
-<div class="credit">Made at Stanford 🌲 by Georg von Manstein</div>
+<div class="credit">Made at Stanford 🌲 by <a href="https://x.com/MansteinGeorg" target="_blank" rel="noopener">Georg von Manstein</a></div>
 
 <nav class="bottomnav" aria-label="Main">
   <button class="nav-item active" data-tab="learn" onclick="showTab('learn')" aria-label="Learn">
