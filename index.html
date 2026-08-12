@@ -4449,6 +4449,25 @@ track("page_view", { signed_in: !!S.user });
 if(S.user){ renderAll(); }
 else { renderAll(); openGate(); }
 
+// Link up already-signed-in sessions from before accounts existed, and
+// pull any progress made on other devices since last visit.
+if(S.user){
+  syncUser(S.user).then(res=>{
+    if(!res || !S.user) return;
+    if(res.existing){
+      if(res.nick) S.user.nick = res.nick;
+      const st = res.state;
+      if(st && typeof st === "object"){
+        if(st.done && typeof st.done === "object") S.done = st.done;
+        if(typeof st.gems === "number" && isFinite(st.gems)) S.gems = st.gems;
+        if(Array.isArray(st.missed)) S.missed = st.missed;
+      }
+    }
+    S.accountEmail = S.user.email;
+    save(); if(!Q) renderAll();
+  });
+}
+
 // Load the admin-editable question bank from the database; the copy
 // baked into this file is the fallback when offline or unreachable.
 if(SUPA_URL && SUPA_KEY){
