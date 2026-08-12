@@ -155,20 +155,24 @@
   .card p{margin:0; color:var(--ink-soft); font-size:14px}
   .countdown{font-size:24px; font-weight:900; color:var(--red); font-variant-numeric:tabular-nums}
 
-  /* stat bar */
-  .statbar{
-    display:flex; justify-content:center; align-items:center; gap:26px;
-    max-width:600px; margin:0 auto 4px; padding:4px 8px;
+  /* top header card */
+  .topbar{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    max-width:600px; margin:0 auto 16px; padding:13px 18px;
+    border:2px solid var(--line); border-radius:18px; background:var(--bg-raise);
+    box-shadow:0 2px 0 var(--line);
   }
-  .stat{
-    display:flex; align-items:center; gap:6px; font-weight:900; font-size:17px;
-    font-variant-numeric:tabular-nums; padding:5px 12px; border-radius:12px;
-    transition:background .15s, transform .1s; cursor:default;
+  .topbar .hi{font-size:19px; font-weight:900; letter-spacing:-.01em}
+  .topbar .when{font-size:13px; color:var(--ink-soft); font-weight:700; margin-top:2px}
+  .topbar .when strong{color:var(--red)}
+  .gem-chip{
+    display:flex; align-items:center; gap:7px; flex:none;
+    padding:8px 14px; border-radius:14px;
+    background:var(--blue-soft); border:2px solid var(--blue);
+    color:var(--blue); font-weight:900; font-size:17px; font-variant-numeric:tabular-nums;
+    box-shadow:0 3px 0 var(--blue-edge);
   }
-  .stat:hover{background:var(--bg-raise); box-shadow:inset 0 0 0 2px var(--line); transform:translateY(-1px)}
-  .stat svg{width:24px; height:24px}
-  .stat.gem{color:var(--blue)}
-  .greet{max-width:600px; margin:0 auto 4px; color:var(--ink-soft); font-size:14px; text-align:center}
+  .gem-chip svg{width:22px; height:22px}
 
   /* ============ LESSON PATH ============ */
   .path{max-width:600px; margin:0 auto}
@@ -412,7 +416,7 @@
     </div>
     <p class="gate-err" id="gate-err"></p>
     <button class="btn btn-green" id="gate-btn" onclick="trySignIn()">Start learning</button>
-    <p class="fine">This just stays in your browser — it's never shared with anyone.</p>
+    <p class="fine">Your nickname, email, and study activity are saved so we can see how the app is used. Lesson progress stays on this device.</p>
   </div>
 </div>
 
@@ -431,8 +435,7 @@
   </nav>
 
   <main class="main">
-    <p class="greet" id="greet"></p>
-    <div class="statbar" id="statbar"></div>
+    <div class="topbar" id="topbar"></div>
     <div id="tab-learn" class="path tabpane"></div>
     <div id="tab-practice" class="page tabpane" hidden></div>
     <div id="tab-profile" class="page tabpane" hidden></div>
@@ -2155,6 +2158,34 @@ if(S.courseVer !== COURSE_VERSION){
   save();
 }
 
+/* ============ ANALYTICS (Supabase) ============ */
+// Publishable key — safe to embed; database policies only allow inserts.
+const SUPA_URL = "";  // e.g. https://xxxx.supabase.co
+const SUPA_KEY = "";  // sb_publishable_... key
+function track(event, props){
+  if(!SUPA_URL || !SUPA_KEY) return;
+  try{
+    fetch(SUPA_URL+"/rest/v1/events", {
+      method:"POST", keepalive:true,
+      headers:{ "apikey":SUPA_KEY, "Authorization":"Bearer "+SUPA_KEY,
+                "Content-Type":"application/json", "Prefer":"return=minimal" },
+      body: JSON.stringify({ email: S.user ? S.user.email : null, event, props: props||{} })
+    }).catch(()=>{});
+  }catch(e){}
+}
+function registerUser(u){
+  if(!SUPA_URL || !SUPA_KEY) return;
+  try{
+    fetch(SUPA_URL+"/rest/v1/app_users?on_conflict=email", {
+      method:"POST", keepalive:true,
+      headers:{ "apikey":SUPA_KEY, "Authorization":"Bearer "+SUPA_KEY,
+                "Content-Type":"application/json",
+                "Prefer":"return=minimal,resolution=ignore-duplicates" },
+      body: JSON.stringify({ nick:u.nick, email:u.email })
+    }).catch(()=>{});
+  }catch(e){}
+}
+
 /* ============ SIGN-IN ============ */
 const EMAIL_RE = /^[^\s@]+@([a-z0-9-]+\.)*stanford\.edu$/i;
 function trySignIn(){
@@ -2172,11 +2203,14 @@ function trySignIn(){
   err.textContent = "";
   S.user = { nick, email };
   save();
+  registerUser(S.user);
+  track("sign_in", { nick });
   $("gate").classList.remove("open");
   renderAll();
 }
 function signOut(){
   if(!confirm("Sign out? Your progress stays saved on this device.")) return;
+  track("sign_out", {});
   S.user = null; save();
   openGate();
 }
@@ -2220,10 +2254,12 @@ const ICONS = {
 function renderAll(){ renderStats(); renderPath(); renderPractice(); renderProfile(); updateBadges(); }
 
 function renderStats(){
-  $("greet").textContent = S.user ? "Let's go, "+S.user.nick+"! Exam "+EXAM.when+"." : "";
-  $("statbar").innerHTML =
-    '<div class="stat gem" title="Diamonds — earn one per correct answer">'+ICONS.gem+' <span>'+S.gems+'</span></div>';
   const days = Math.max(0, Math.ceil((new Date(EXAM.date) - new Date()) / 864e5));
+  const dayTxt = days===0 ? "today!" : days===1 ? "tomorrow" : "in "+days+" days";
+  $("topbar").innerHTML =
+    '<div><div class="hi">'+(S.user ? "Hi, "+esc(S.user.nick)+"! 👋" : "CS106 Prep")+'</div>'+
+    '<div class="when">'+esc(EXAM.name)+' — <strong>'+dayTxt+'</strong> · Fri 12:00 PM</div></div>'+
+    '<div class="gem-chip" title="Diamonds — one per correct answer">'+ICONS.gem+' '+S.gems+'</div>';
   const done = doneLessons(), total = totalLessons();
   const pct = total ? Math.round(done/total*100) : 0;
   $("rail-exam").innerHTML =
@@ -2324,7 +2360,7 @@ function renderProfile(){
   $("tab-profile").innerHTML =
     '<div class="profile-head">'+
       '<div class="avatar">'+esc((u.nick||"?").trim().charAt(0).toUpperCase())+'</div>'+
-      '<div><h2>'+esc(u.nick)+'</h2><p>'+esc(u.email)+'</p></div>'+
+      '<div><h2 style="user-select:none; cursor:default" onclick="nickTap()">'+esc(u.nick)+'</h2><p>'+esc(u.email)+'</p></div>'+
     '</div>'+
     '<div class="sec-label">Your stats</div>'+
     '<div class="stats-grid">'+
@@ -2336,16 +2372,34 @@ function renderProfile(){
     '<div class="card"><div class="meter"><div style="width:'+pct+'%"></div></div>'+
     '<div class="meter-cap"><span>'+pct+'% of the path</span><span>'+esc(EXAM.when)+'</span></div></div>'+
     '<button class="btn btn-ghost" style="margin-top:22px" onclick="signOut()">Sign out</button>'+
-    '<button class="btn btn-ghost" style="margin-top:10px; color:var(--red)" onclick="resetAll()">Reset all progress</button>';
+    '<button class="btn btn-ghost" id="resetbtn" style="margin-top:10px; color:var(--red)" onclick="resetAll()" hidden>Reset all progress</button>';
+}
+// Hidden escape hatch: tapping the profile name 10 times in quick
+// succession reveals the reset button for 10 seconds.
+let nickTaps = 0, nickTapTimer = null;
+function nickTap(){
+  clearTimeout(nickTapTimer);
+  nickTapTimer = setTimeout(()=>{ nickTaps = 0; }, 1500);
+  if(++nickTaps >= 10){
+    nickTaps = 0;
+    const b = $("resetbtn");
+    if(b){
+      b.hidden = false;
+      b.classList.add("pop");
+      setTimeout(()=>{ const x=$("resetbtn"); if(x) x.hidden = true; }, 10000);
+    }
+  }
 }
 function resetAll(){
   if(!confirm("Reset all progress? This can't be undone.")) return;
-  S = Object.assign({}, DEFAULTS, {user:S.user});
+  track("reset_progress", {});
+  S = Object.assign({}, DEFAULTS, {user:S.user, courseVer:COURSE_VERSION});
   save(); renderAll();
 }
 
 /* ============ TABS ============ */
 function showTab(name){
+  track("tab_view", { tab: name });
   ["learn","practice","profile"].forEach(t=>{ $("tab-"+t).hidden = (t!==name); });
   document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active", b.dataset.tab===name));
   if(name==="practice") renderPractice();
@@ -2356,6 +2410,7 @@ function showTab(name){
 let Q = null;
 
 function startLesson(u,l){
+  track("lesson_start", { unit:u, lesson:l, name:COURSE[u].lessons[l].name, redo:isDone(u,l) });
   const qs = shuffled(COURSE[u].lessons[l].questions);
   Q = { questions:qs, index:0, hearts:5, correct:0, wrong:0,
         picked:-1, checked:false, lessonU:u, lessonL:l, mode:"lesson" };
@@ -2368,12 +2423,14 @@ function startRandom(){
     if(isDone(u,l) || (nxt && nxt.u===u && nxt.l===l)) pool = pool.concat(les.questions);
   }));
   if(!pool.length) pool = COURSE[0].lessons[0].questions;
+  track("practice_start", {});
   Q = { questions:shuffled(pool).slice(0,10), index:0, hearts:5, correct:0, wrong:0,
         picked:-1, checked:false, lessonU:-1, lessonL:-1, mode:"practice" };
   openQuiz();
 }
 function startMistakes(){
   if(!S.missed.length) return;
+  track("mistakes_start", { count: S.missed.length });
   const all = [];
   COURSE.forEach(unit=>unit.lessons.forEach(les=>all.push(...les.questions)));
   const qs = S.missed.map(m => all.find(x=>x.q===m.q))
@@ -2390,6 +2447,7 @@ function openQuiz(){
 }
 function quitQuiz(){
   if(Q && Q.index>0 && !confirm("Quit this lesson? Progress in it won't count.")) return;
+  if(Q) track("lesson_quit", { mode: Q.mode, at_question: Q.index });
   $("quiz").classList.remove("open");
   Q = null;
 }
@@ -2438,6 +2496,7 @@ function onCheck(){
       if(xi===cur.answer) x.classList.add("reveal-ok");
       else if(xi===Q.picked && !ok) x.classList.add("reveal-bad");
     });
+    track("question_answered", { q: cur.q.slice(0,120), correct: ok, mode: Q.mode });
     const f = $("qfooter"), v = $("verdict");
     if(ok){
       Q.correct++;
@@ -2481,6 +2540,8 @@ function finishQuiz(failed){
   S.gems += gems;
   if(!failed && Q.mode==="lesson") S.done[lessonKey(Q.lessonU,Q.lessonL)] = true;
   save();
+  track("lesson_finish", { mode: Q.mode, unit: Q.lessonU, lesson: Q.lessonL,
+    failed: !!failed, accuracy: acc, gems });
   const mode = Q.mode;
   Q = null;
   $("quiz").classList.remove("open");
@@ -2565,6 +2626,7 @@ document.addEventListener("keydown", e=>{
 addEventListener("resize", ()=>{ if(!$("quiz").classList.contains("open")) renderPath(); });
 
 /* ============ BOOT ============ */
+track("page_view", { signed_in: !!S.user });
 if(S.user){ renderAll(); }
 else { renderAll(); openGate(); }
 </script>
