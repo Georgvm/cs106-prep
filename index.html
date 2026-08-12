@@ -3901,39 +3901,13 @@ const $ = id => document.getElementById(id);
 function esc(s){ const d=document.createElement("div"); d.textContent=String(s); return d.innerHTML; }
 function shuffled(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-/* ============ STATE ============ */
-const SAVE_KEY = "cs106ea-prep-v2";
-const DEFAULTS = { user:null, done:{}, gems:0, missed:[] };
-let S;
-try { S = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(SAVE_KEY) || "{}")); }
-catch(e){ S = Object.assign({}, DEFAULTS); }
-if(typeof S.gems !== "number" && typeof S.xp === "number") S.gems = Math.round(S.xp/10); // migrate old XP saves
-delete S.xp; delete S.streakDays;
-if(!Array.isArray(S.missed)) S.missed = [];
-if(typeof S.done !== "object" || !S.done) S.done = {};
-if(typeof S.gems !== "number" || !isFinite(S.gems)) S.gems = 0;
-function save(){
-  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){}
-  if(typeof pushState === "function") pushState();
-}
-
-// When the course content changes shape, old lesson indexes and missed
-// questions point at the wrong material — reset path progress, keep
-// the user and their diamonds.
-const COURSE_VERSION = 2;
-if(S.courseVer !== COURSE_VERSION){
-  S.done = {}; S.missed = []; S.courseVer = COURSE_VERSION;
-  save();
-}
-
 /* ============ ANALYTICS (Supabase) ============ */
 // Publishable key — safe to embed; database policies only allow inserts.
 const SUPA_URL = "https://ljdvbwctchitacmidwco.supabase.co";
 const SUPA_KEY = "sb_publishable_yHRdK-szRopXmi2MFHGtxw_nFKHjHMZ";
 function track(event, props){
-  if(!SUPA_URL || !SUPA_KEY) return;
   try{
+    if(!SUPA_URL || !SUPA_KEY) return;
     fetch(SUPA_URL+"/rest/v1/events", {
       method:"POST", keepalive:true,
       headers:{ "apikey":SUPA_KEY, "Authorization":"Bearer "+SUPA_KEY,
@@ -3945,6 +3919,12 @@ function track(event, props){
 /* Accounts: the email IS the account (server-side). sync_user returns the
    original nick + synced progress for an existing account; save_state
    pushes progress after every change (debounced). */
+// surface breakage on visitors' devices in the analytics
+addEventListener("error", e=>track("js_error", {
+  msg: String(e.message||"").slice(0,180),
+  at: String(e.filename||"").split("/").pop()+":"+(e.lineno||0) }));
+addEventListener("unhandledrejection", e=>track("js_error", {
+  msg: "promise: "+String((e.reason && e.reason.message) || e.reason).slice(0,160) }));
 function syncUser(u){
   if(!SUPA_URL || !SUPA_KEY) return Promise.resolve(null);
   return fetch(SUPA_URL+"/rest/v1/rpc/sync_user", {
@@ -3971,6 +3951,36 @@ function pushState(){
     }catch(e){}
   }, 1200);
 }
+
+
+/* ============ STATE ============ */
+const SAVE_KEY = "cs106ea-prep-v2";
+const DEFAULTS = { user:null, done:{}, gems:0, missed:[] };
+let S;
+try { S = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(SAVE_KEY) || "{}")); }
+catch(e){ S = Object.assign({}, DEFAULTS); }
+if(typeof S.gems !== "number" && typeof S.xp === "number") S.gems = Math.round(S.xp/10); // migrate old XP saves
+delete S.xp; delete S.streakDays;
+if(!Array.isArray(S.missed)) S.missed = [];
+if(typeof S.done !== "object" || !S.done) S.done = {};
+if(typeof S.gems !== "number" || !isFinite(S.gems)) S.gems = 0;
+function save(){
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){}
+  if(typeof pushState === "function") pushState();
+}
+
+// When the course content changes shape, old lesson indexes and missed
+// questions point at the wrong material — reset path progress, keep
+// the user and their diamonds.
+// show the sign-in immediately for new visitors — before any code that could fail
+if(!S.user){ try{ document.getElementById("gate").classList.add("open"); }catch(e){} }
+
+const COURSE_VERSION = 2;
+if(S.courseVer !== COURSE_VERSION){
+  S.done = {}; S.missed = []; S.courseVer = COURSE_VERSION;
+  save();
+}
+
 
 /* ============ SIGN-IN ============ */
 const EMAIL_RE = /^[^\s@]+@([a-z0-9-]+\.)*stanford\.edu$/i;
@@ -4470,12 +4480,6 @@ track("page_view", { signed_in: !!S.user });
 // gate first: even if rendering fails, a new visitor sees the sign-in
 if(!S.user) openGate();
 renderAll();
-// surface breakage on visitors' devices in the analytics
-addEventListener("error", e=>track("js_error", {
-  msg: String(e.message||"").slice(0,180),
-  at: String(e.filename||"").split("/").pop()+":"+(e.lineno||0) }));
-addEventListener("unhandledrejection", e=>track("js_error", {
-  msg: "promise: "+String((e.reason && e.reason.message) || e.reason).slice(0,160) }));
 
 // Link up already-signed-in sessions from before accounts existed, and
 // pull any progress made on other devices since last visit.
