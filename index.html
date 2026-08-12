@@ -2207,6 +2207,9 @@ function trySignIn(){
   registerUser(S.user);
   track("sign_in", { nick });
   $("gate").classList.remove("open");
+  // iOS scrolls the page behind the overlay while the keyboard is up;
+  // snap back so the app doesn't open half-scrolled
+  window.scrollTo(0, 0);
   renderAll();
 }
 function signOut(){
@@ -2497,7 +2500,9 @@ function onCheck(){
       if(xi===cur.answer) x.classList.add("reveal-ok");
       else if(xi===Q.picked && !ok) x.classList.add("reveal-bad");
     });
-    track("question_answered", { q: cur.q.slice(0,120), correct: ok, mode: Q.mode });
+    track("question_answered", { q: cur.q.slice(0,120), correct: ok, mode: Q.mode,
+      picked: Q.picked, picked_text: String(cur.choices[Q.picked]||"").slice(0,90),
+      answer: cur.answer });
     const f = $("qfooter"), v = $("verdict");
     if(ok){
       Q.correct++;
