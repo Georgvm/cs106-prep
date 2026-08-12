@@ -3989,7 +3989,7 @@ function trySignIn(){
   const email = $("email").value.trim();
   const err = $("gate-err");
   $("nick").classList.remove("bad"); $("email").classList.remove("bad");
-  if(!nick){ err.textContent = "Pick a nickname first!"; $("nick").classList.add("bad"); $("nick").focus(); return; }
+  if(nick.length < 2){ err.textContent = "Your name needs at least 2 characters."; $("nick").classList.add("bad"); $("nick").focus(); return; }
   if(!EMAIL_RE.test(email)){
     err.textContent = email.includes("@")
       ? "Hmm — that's not a stanford.edu address. Cardinal only! 🌲"
@@ -4214,7 +4214,7 @@ function editNick(e){
   const v = prompt("New display name (max 20 characters):", S.user.nick);
   if(v === null) return;
   const nick = v.trim().slice(0, 20);
-  if(!nick) return;
+  if(nick.length < 2){ alert("Your name needs at least 2 characters."); return; }
   S.user.nick = nick;
   save();  // pushState also updates the name on the server
   track("nick_change", { nick });

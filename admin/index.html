@@ -109,6 +109,20 @@
   .bar{height:10px; border-radius:6px; background:var(--line); overflow:hidden; min-width:60px}
   .bar>div{height:100%; background:var(--red)}
 
+  /* charts */
+  .hours{display:flex; align-items:flex-end; gap:2px; height:130px; margin-top:8px}
+  .hours .hbar{flex:1; min-width:2px; background:var(--blue); border-radius:3px 3px 0 0; transition:filter .1s}
+  .hours .hbar:hover{filter:brightness(1.18)}
+  .hours .hbar.zero{background:var(--line)}
+  .hours-x{display:flex; justify-content:space-between; font-size:10.5px; color:var(--ink-faint); font-weight:700; margin-top:5px}
+  .tip{position:fixed; z-index:60; background:var(--ink); color:var(--bg); font-size:12px; font-weight:700;
+       padding:5px 10px; border-radius:8px; pointer-events:none; display:none; white-space:nowrap}
+  .hrow{display:grid; grid-template-columns:minmax(90px,170px) 1fr 48px; gap:8px; align-items:center; padding:4px 0; font-size:13px}
+  .hrow .lbl{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:700; color:var(--ink-soft)}
+  .hrow .track{height:14px; border-radius:7px; background:var(--line); overflow:hidden}
+  .hrow .track>div{height:100%; border-radius:7px; min-width:2px}
+  .hrow .val{font-weight:800; font-variant-numeric:tabular-nums; text-align:right}
+
   /* editor */
   .unit{border:2px solid var(--line); border-radius:16px; margin-bottom:10px; overflow:hidden; background:var(--bg-raise)}
   .unit>summary{list-style:none; cursor:pointer; padding:12px 16px; font-weight:900; display:flex; align-items:center; gap:10px}
@@ -159,15 +173,23 @@
 
   <div class="tiles" id="tiles"></div>
 
+  <div class="panel" style="margin-bottom:14px">
+    <h2>Activity · last 48 hours</h2>
+    <div class="hours" id="hours"></div>
+    <div class="hours-x" id="hours-x"></div>
+  </div>
+
   <div class="cols">
     <div class="panel"><h2>Activity feed</h2><div class="scroll"><ul class="feed" id="feed"></ul></div></div>
     <div class="panel"><h2>Users</h2><div class="scroll" id="users"></div></div>
   </div>
 
   <div class="cols">
-    <div class="panel"><h2>Hardest questions</h2><div id="hardest" class="scroll"></div></div>
+    <div class="panel"><h2>Accuracy by unit</h2><div id="unitacc" class="scroll"></div></div>
     <div class="panel"><h2>Events by type</h2><div id="byevent" class="scroll"></div></div>
   </div>
+
+  <div class="panel" style="margin-bottom:18px"><h2>Hardest questions</h2><div id="hardest" class="scroll"></div></div>
 
   <div class="panel">
     <h2>Question bank</h2>
@@ -179,6 +201,8 @@
     </div>
   </div>
 </div>
+
+<div class="tip" id="tip"></div>
 
 <script>
 "use strict";
@@ -252,7 +276,9 @@ async function refresh(){
   $("feed").innerHTML = (d.recent || []).map(feedRow).join("") || '<li class="muted">No activity yet.</li>';
   $("users").innerHTML = usersTable(d.users || []);
   $("hardest").innerHTML = hardestTable(d.hardest || []);
-  $("byevent").innerHTML = byEventTable(d.by_event || {});
+  $("byevent").innerHTML = byEventBars(d.by_event || {});
+  renderHours(d.hourly);
+  $("unitacc").innerHTML = unitAccBars(d.unit_acc);
   $("stamp").textContent = "Updated " + new Date().toLocaleTimeString();
 }
 const tile = (num, lbl, accent) =>
@@ -295,11 +321,54 @@ function hardestTable(rows){
         '<td><div class="bar"><div style="width:'+pct+'%"></div></div></td></tr>';
     }).join("")+'</table>';
 }
-function byEventTable(map){
+function byEventBars(map){
   const rows = Object.entries(map).sort((a,b)=>b[1]-a[1]);
   if(!rows.length) return '<p class="muted">Nothing yet.</p>';
-  return '<table>'+rows.map(([k,v])=>'<tr><td>'+esc(k.replace(/_/g," "))+'</td><td class="num">'+v+'</td></tr>').join("")+'</table>';
+  const max = Math.max(...rows.map(r=>r[1]));
+  return rows.map(([k,v])=>
+    '<div class="hrow"><span class="lbl">'+esc(k.replace(/_/g," "))+'</span>'+
+    '<div class="track"><div style="width:'+Math.max(1, Math.round(v/max*100))+'%; background:var(--blue)"></div></div>'+
+    '<span class="val">'+v+'</span></div>').join("");
 }
+function fmtHour(iso){
+  if(!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined,{weekday:"short"})+" "+String(d.getHours()).padStart(2,"0")+":00";
+}
+function renderHours(hourly){
+  const host = $("hours"), ax = $("hours-x");
+  if(!Array.isArray(hourly)){
+    host.innerHTML = '<p class="muted">Run admin_upgrade.sql (in your CS 106 Prep folder) to enable the charts.</p>';
+    ax.innerHTML = ""; return;
+  }
+  const max = Math.max(1, ...hourly.map(x=>x.n));
+  host.innerHTML = hourly.map(x=>
+    '<div class="hbar'+(x.n?'':' zero')+'" style="height:'+(x.n ? Math.max(4, Math.round(x.n/max*100)) : 2)+'%"'+
+    ' data-tip="'+esc(fmtHour(x.h))+' · '+x.n+' event'+(x.n===1?'':'s')+'"></div>').join("");
+  ax.innerHTML = [0,12,24,36,47].map(i=>'<span>'+esc(fmtHour((hourly[i]||{}).h))+'</span>').join("");
+}
+function unitAccBars(rows){
+  if(!Array.isArray(rows)) return '<p class="muted">Run admin_upgrade.sql to enable this chart.</p>';
+  if(!rows.length) return '<p class="muted">Appears once someone finishes a lesson.</p>';
+  return rows.map(r=>{
+    const unit = COURSE && COURSE[r.unit];
+    const name = unit ? unit.title : "Unit "+(r.unit+1);
+    const color = unit && unit.color ? unit.color : "var(--green)";
+    return '<div class="hrow" title="'+esc(r.n)+' lesson finishes"><span class="lbl">'+esc(name)+'</span>'+
+      '<div class="track"><div style="width:'+Math.min(100, Math.max(1, r.acc))+'%; background:'+esc(color)+'"></div></div>'+
+      '<span class="val">'+r.acc+'%</span></div>';
+  }).join("");
+}
+// tooltip for the hourly bars
+document.addEventListener("mousemove", e=>{
+  const tip = $("tip"), t = e.target;
+  if(t && t.dataset && t.dataset.tip){
+    tip.textContent = t.dataset.tip;
+    tip.style.display = "block";
+    tip.style.left = Math.min(innerWidth-160, e.clientX+12)+"px";
+    tip.style.top = (e.clientY-34)+"px";
+  } else tip.style.display = "none";
+});
 
 /* ── question bank editor ── */
 async function loadCourse(){
