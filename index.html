@@ -504,7 +504,7 @@
    ===================================================================== */
 const EXAM = { name:"CS 106EA Final", when:"Friday, Aug 14 · 12:00 PM", date:"2026-08-14T12:00:00" };
 
-const COURSE = [
+let COURSE = [
  {
   "title": "Exploring AI",
   "color": "#58cc02",
@@ -2630,4 +2630,20 @@ addEventListener("resize", ()=>{ if(!$("quiz").classList.contains("open")) rende
 track("page_view", { signed_in: !!S.user });
 if(S.user){ renderAll(); }
 else { renderAll(); openGate(); }
+
+// Load the admin-editable question bank from the database; the copy
+// baked into this file is the fallback when offline or unreachable.
+if(SUPA_URL && SUPA_KEY){
+  fetch(SUPA_URL+"/rest/v1/course?id=eq.1&select=data",
+        { headers:{ "apikey":SUPA_KEY, "Authorization":"Bearer "+SUPA_KEY } })
+    .then(r => r.ok ? r.json() : null)
+    .then(rows => {
+      const data = rows && rows[0] && rows[0].data;
+      if(Array.isArray(data) && data.length &&
+         data.every(u => u.title && Array.isArray(u.lessons))){
+        COURSE = data;
+        if(!Q) renderAll();
+      }
+    }).catch(()=>{});
+}
 </script>

@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CS106 Prep — Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root{
+    --green:#58cc02; --green-edge:#46a302; --green-soft:#d7ffb8;
+    --blue:#1cb0f6; --blue-edge:#1899d6; --blue-soft:#ddf4ff;
+    --gold:#ffc800; --gold-edge:#e0a500;
+    --red:#ff4b4b; --red-edge:#ea2b2b; --red-soft:#ffdfe0;
+    --bg:#ffffff; --bg-raise:#ffffff; --line:#e5e5e5;
+    --ink:#3c3c3c; --ink-soft:#777777; --ink-faint:#afafaf;
+    --ok-ink:#58a700; --bad-ink:#ea2b2b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --green:#58cc02; --green-edge:#46a302; --green-soft:#20380b;
+      --blue:#1cb0f6; --blue-edge:#1899d6; --blue-soft:#0e3a52;
+      --gold:#ffc800; --gold-edge:#e0a500;
+      --red:#ff5b5b; --red-edge:#ea2b2b; --red-soft:#4a1f24;
+      --bg:#131f24; --bg-raise:#1b2b33; --line:#37464f;
+      --ink:#f1f7fb; --ink-soft:#9db1bb; --ink-faint:#52656d;
+      --ok-ink:#79e64a; --bad-ink:#ff8a8a;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0; padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, sans-serif;
+    font-weight:600; line-height:1.45; min-height:100dvh;
+  }
+  button{font:inherit; color:inherit; background:none; border:none; padding:0; cursor:pointer}
+  input,textarea,select{font:inherit; color:inherit}
+  button:focus-visible, input:focus-visible, textarea:focus-visible{outline:3px solid var(--blue); outline-offset:2px; border-radius:10px}
+
+  .btn{
+    display:inline-block; border-radius:14px; padding:11px 18px 9px;
+    font-weight:800; font-size:14px; letter-spacing:.05em; text-transform:uppercase;
+    text-align:center; user-select:none; transition:filter .12s, transform .05s;
+  }
+  .btn:not(:disabled):hover{filter:brightness(1.06)}
+  .btn:not(:disabled):active{transform:translateY(3px); box-shadow:none !important}
+  .btn-green{background:var(--green); color:#fff; box-shadow:0 3px 0 var(--green-edge)}
+  .btn-blue{background:var(--blue); color:#fff; box-shadow:0 3px 0 var(--blue-edge)}
+  .btn-red{background:var(--red); color:#fff; box-shadow:0 3px 0 var(--red-edge)}
+  .btn-ghost{background:var(--bg-raise); color:var(--blue); box-shadow:0 2px 0 var(--line); border:2px solid var(--line)}
+  .btn:disabled{opacity:.55; cursor:default}
+
+  /* login */
+  .gate{position:fixed; inset:0; z-index:100; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:24px}
+  .gate[hidden]{display:none}
+  .gate-card{width:100%; max-width:360px; text-align:center}
+  .mascot{width:84px; height:84px; margin:0 auto 10px; border-radius:50%; background:var(--green);
+    box-shadow:0 5px 0 var(--green-edge); display:grid; place-items:center; font-size:42px}
+  .gate h1{font-size:26px; font-weight:900; margin:8px 0 2px}
+  .gate h1 em{font-style:normal; color:var(--green)}
+  .gate .sub{color:var(--ink-soft); margin:0 0 20px; font-size:14px}
+  .field{text-align:left; margin-bottom:12px}
+  .field label{display:block; font-size:11.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin:0 4px 5px}
+  .field input{width:100%; padding:12px 15px; border-radius:13px; border:2px solid var(--line); background:var(--bg-raise); font-weight:700; font-size:15px}
+  .gate-err{min-height:20px; color:var(--bad-ink); font-size:13px; font-weight:700; margin:4px 0 10px}
+  .gate .btn{width:100%}
+
+  /* shell */
+  .wrap{max-width:1080px; margin:0 auto; padding:20px 16px 60px}
+  .head{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:18px}
+  .head h1{font-size:22px; font-weight:900; margin:0}
+  .head h1 em{font-style:normal; color:var(--green)}
+  .live{display:flex; align-items:center; gap:7px; font-size:12px; font-weight:900; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--ok-ink); background:var(--green-soft); border-radius:99px; padding:5px 12px}
+  .live .dot{width:8px; height:8px; border-radius:50%; background:var(--green); animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+  @media (prefers-reduced-motion: reduce){ .live .dot{animation:none} }
+  .head .spacer{flex:1}
+  .muted{color:var(--ink-soft)}
+
+  .tiles{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:10px; margin-bottom:18px}
+  .tile{border:2px solid var(--line); border-radius:16px; background:var(--bg-raise); padding:13px 15px; box-shadow:0 2px 0 var(--line)}
+  .tile .num{font-size:24px; font-weight:900; font-variant-numeric:tabular-nums; line-height:1.15}
+  .tile .lbl{font-size:10.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); margin-top:2px}
+  .tile.accent .num{color:var(--blue)}
+
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px}
+  @media (max-width:820px){ .cols{grid-template-columns:1fr} }
+  .panel{border:2px solid var(--line); border-radius:18px; background:var(--bg-raise); padding:16px 18px; box-shadow:0 2px 0 var(--line)}
+  .panel h2{font-size:15px; font-weight:900; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .scroll{max-height:420px; overflow:auto}
+
+  table{width:100%; border-collapse:collapse; font-size:13.5px}
+  th{font-size:10.5px; font-weight:900; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); text-align:left; padding:4px 8px 6px}
+  td{padding:6px 8px; border-top:2px solid var(--line); font-variant-numeric:tabular-nums}
+  td.num{text-align:right}
+
+  .feed{list-style:none; margin:0; padding:0; font-size:13.5px}
+  .feed li{display:flex; gap:8px; align-items:baseline; padding:6px 2px; border-top:2px solid var(--line)}
+  .feed li:first-child{border-top:none}
+  .feed .tag{flex:none; font-size:10.5px; font-weight:900; letter-spacing:.05em; text-transform:uppercase;
+    border-radius:8px; padding:2px 8px; background:var(--blue-soft); color:var(--blue)}
+  .feed .tag.good{background:var(--green-soft); color:var(--ok-ink)}
+  .feed .tag.bad{background:var(--red-soft); color:var(--bad-ink)}
+  .feed .who{font-weight:800}
+  .feed .what{color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1}
+  .feed time{flex:none; color:var(--ink-faint); font-size:12px}
+
+  .bar{height:10px; border-radius:6px; background:var(--line); overflow:hidden; min-width:60px}
+  .bar>div{height:100%; background:var(--red)}
+
+  /* editor */
+  .unit{border:2px solid var(--line); border-radius:16px; margin-bottom:10px; overflow:hidden; background:var(--bg-raise)}
+  .unit>summary{list-style:none; cursor:pointer; padding:12px 16px; font-weight:900; display:flex; align-items:center; gap:10px}
+  .unit>summary::-webkit-details-marker{display:none}
+  .unit>summary .chev{transition:transform .15s; color:var(--ink-faint)}
+  .unit[open]>summary .chev{transform:rotate(90deg)}
+  .unit .swatch{width:14px; height:14px; border-radius:5px; flex:none}
+  .lesson{border-top:2px solid var(--line); padding:10px 16px}
+  .lesson>summary{list-style:none; cursor:pointer; font-weight:800; color:var(--ink-soft); padding:4px 0}
+  .lesson>summary::-webkit-details-marker{display:none}
+  .qcard{border:2px solid var(--line); border-radius:14px; padding:12px 14px; margin:10px 0; background:var(--bg)}
+  .qcard textarea{width:100%; border:2px solid var(--line); border-radius:10px; background:var(--bg-raise);
+    padding:8px 10px; font-weight:700; font-size:14px; resize:vertical; min-height:38px}
+  .qcard .choice-row{display:flex; gap:8px; align-items:center; margin-top:8px}
+  .qcard .choice-row input[type=text]{flex:1; border:2px solid var(--line); border-radius:10px; background:var(--bg-raise); padding:7px 10px; font-weight:700; font-size:13.5px}
+  .qcard .choice-row input[type=radio]{width:18px; height:18px; accent-color:var(--green)}
+  .qcard .why{margin-top:8px}
+  .qcard .row-end{display:flex; justify-content:space-between; align-items:center; margin-top:10px}
+  .qcard .del{color:var(--bad-ink); font-weight:800; font-size:12.5px}
+  .savebar{position:sticky; bottom:0; background:var(--bg); border-top:2px solid var(--line);
+    padding:12px 0; display:flex; gap:12px; align-items:center; margin-top:8px}
+  .save-msg{font-size:13.5px; font-weight:700}
+  .save-msg.ok{color:var(--ok-ink)} .save-msg.err{color:var(--bad-ink)}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="mascot">🛠️</div>
+    <h1>CS106 <em>Prep</em> Admin</h1>
+    <p class="sub">Dashboard sign-in</p>
+    <div class="field"><label for="u">Username</label><input id="u" autocomplete="username"></div>
+    <div class="field"><label for="p">Password</label><input id="p" type="password" autocomplete="current-password"></div>
+    <p class="gate-err" id="err"></p>
+    <button class="btn btn-green" id="loginbtn" onclick="login()">Sign in</button>
+  </div>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <div class="head">
+    <h1>CS106 <em>Prep</em> — Admin</h1>
+    <span class="live"><span class="dot"></span> Live · refreshes every 10s</span>
+    <span class="spacer"></span>
+    <span class="muted" id="stamp"></span>
+    <button class="btn btn-ghost" onclick="logout()">Sign out</button>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="cols">
+    <div class="panel"><h2>Activity feed</h2><div class="scroll"><ul class="feed" id="feed"></ul></div></div>
+    <div class="panel"><h2>Users</h2><div class="scroll" id="users"></div></div>
+  </div>
+
+  <div class="cols">
+    <div class="panel"><h2>Hardest questions</h2><div id="hardest" class="scroll"></div></div>
+    <div class="panel"><h2>Events by type</h2><div id="byevent" class="scroll"></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>Question bank</h2>
+    <p class="muted" style="font-size:13.5px; margin:0 0 12px" id="bank-note"></p>
+    <div id="editor"></div>
+    <div class="savebar">
+      <button class="btn btn-green" id="savebtn" onclick="saveCourse()">Save question bank</button>
+      <span class="save-msg" id="savemsg"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const SUPA_URL = "https://ljdvbwctchitacmidwco.supabase.co";
+const SUPA_KEY = "sb_publishable_yHRdK-szRopXmi2MFHGtxw_nFKHjHMZ";
+const $ = id => document.getElementById(id);
+const esc = s => { const d=document.createElement("div"); d.textContent=String(s??""); return d.innerHTML; };
+
+let CRED = null;   // {u, p} for this tab only
+let COURSE = null; // editable working copy
+let timer = null;
+
+async function rpc(fn, args){
+  const r = await fetch(SUPA_URL+"/rest/v1/rpc/"+fn, {
+    method:"POST",
+    headers:{ "apikey":SUPA_KEY, "Authorization":"Bearer "+SUPA_KEY, "Content-Type":"application/json" },
+    body: JSON.stringify(args)
+  });
+  if(!r.ok){
+    const body = await r.text().catch(()=> "");
+    throw new Error(body.includes("unauthorized") ? "unauthorized" : "request failed ("+r.status+")");
+  }
+  const text = await r.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function login(){
+  const u = $("u").value.trim(), p = $("p").value;
+  if(!u || !p){ $("err").textContent = "Enter username and password."; return; }
+  $("loginbtn").disabled = true; $("err").textContent = "";
+  try{
+    await rpc("admin_stats", {u, p});           // throws on bad credentials
+    CRED = {u, p};
+    sessionStorage.setItem("cs106admin", JSON.stringify(CRED));
+    $("gate").hidden = true; $("app").hidden = false;
+    startPolling(); loadCourse();
+  }catch(e){
+    $("err").textContent = e.message==="unauthorized"
+      ? "Wrong username or password."
+      : "Can't reach the database — is the admin SQL set up?";
+  }
+  $("loginbtn").disabled = false;
+}
+function logout(){
+  CRED = null; sessionStorage.removeItem("cs106admin");
+  clearInterval(timer);
+  $("app").hidden = true; $("gate").hidden = false; $("p").value = "";
+}
+["u","p"].forEach(id => $(id).addEventListener("keydown", e=>{ if(e.key==="Enter") login(); }));
+
+/* ── dashboard ── */
+function startPolling(){
+  refresh();
+  clearInterval(timer);
+  timer = setInterval(refresh, 10000);
+}
+async function refresh(){
+  if(!CRED) return;
+  let d;
+  try{ d = await rpc("admin_stats", CRED); }
+  catch(e){ if(e.message==="unauthorized") logout(); return; }
+  const t = d.totals || {};
+  const acc = t.answers ? Math.round(100 * t.correct / t.answers) : 0;
+  $("tiles").innerHTML =
+    tile(t.users, "Users") +
+    tile(t.events_24h, "Events · 24h", true) +
+    tile(t.answers, "Answers") +
+    tile(acc + "%", "Accuracy") +
+    tile(t.lessons_finished, "Lessons done") +
+    tile(t.events, "Events · total");
+  $("feed").innerHTML = (d.recent || []).map(feedRow).join("") || '<li class="muted">No activity yet.</li>';
+  $("users").innerHTML = usersTable(d.users || []);
+  $("hardest").innerHTML = hardestTable(d.hardest || []);
+  $("byevent").innerHTML = byEventTable(d.by_event || {});
+  $("stamp").textContent = "Updated " + new Date().toLocaleTimeString();
+}
+const tile = (num, lbl, accent) =>
+  '<div class="tile'+(accent?' accent':'')+'"><div class="num">'+esc(num??0)+'</div><div class="lbl">'+esc(lbl)+'</div></div>';
+
+function ago(iso){
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime())/1000);
+  if(s < 60) return Math.floor(s)+"s";
+  if(s < 3600) return Math.floor(s/60)+"m";
+  if(s < 86400) return Math.floor(s/3600)+"h";
+  return Math.floor(s/86400)+"d";
+}
+function feedRow(e){
+  const p = e.props || {};
+  let cls = "", what = "";
+  switch(e.event){
+    case "question_answered": cls = p.correct ? "good" : "bad"; what = (p.correct?"✓ ":"✗ ") + (p.q||""); break;
+    case "lesson_finish": cls = p.failed ? "bad" : "good"; what = (p.failed?"out of hearts":"finished") + " · " + (p.accuracy??"?") + "% · mode " + (p.mode||"?"); break;
+    case "lesson_start": what = "started " + (p.name || "lesson"); break;
+    case "sign_in": cls = "good"; what = "signed in as " + (p.nick||""); break;
+    case "page_view": what = p.signed_in ? "opened the app" : "visited (signed out)"; break;
+    default: what = JSON.stringify(p);
+  }
+  return '<li><span class="tag '+cls+'">'+esc(e.event.replace(/_/g," "))+'</span>'+
+    '<span class="who">'+esc(e.email ? e.email.split("@")[0] : "anon")+'</span>'+
+    '<span class="what">'+esc(what)+'</span><time>'+ago(e.created_at)+'</time></li>';
+}
+function usersTable(users){
+  if(!users.length) return '<p class="muted">No sign-ups yet.</p>';
+  return '<table><tr><th>Nick</th><th>Email</th><th class="num">Events</th><th>Last seen</th></tr>'+
+    users.map(u=>'<tr><td><strong>'+esc(u.nick)+'</strong></td><td>'+esc(u.email)+'</td>'+
+      '<td class="num">'+esc(u.events)+'</td><td>'+(u.last_seen?ago(u.last_seen)+" ago":"—")+'</td></tr>').join("")+'</table>';
+}
+function hardestTable(rows){
+  if(!rows.length) return '<p class="muted">Needs at least 3 answers per question to rank.</p>';
+  return '<table><tr><th>Question</th><th class="num">Wrong</th><th style="width:80px"></th></tr>'+
+    rows.map(r=>{
+      const pct = r.total ? Math.round(100*r.wrong/r.total) : 0;
+      return '<tr><td>'+esc(r.q)+'</td><td class="num">'+pct+'% of '+r.total+'</td>'+
+        '<td><div class="bar"><div style="width:'+pct+'%"></div></div></td></tr>';
+    }).join("")+'</table>';
+}
+function byEventTable(map){
+  const rows = Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  if(!rows.length) return '<p class="muted">Nothing yet.</p>';
+  return '<table>'+rows.map(([k,v])=>'<tr><td>'+esc(k.replace(/_/g," "))+'</td><td class="num">'+v+'</td></tr>').join("")+'</table>';
+}
+
+/* ── question bank editor ── */
+async function loadCourse(){
+  let rows = null;
+  try{
+    const r = await fetch(SUPA_URL+"/rest/v1/course?id=eq.1&select=data,updated_at",
+      { headers:{ "apikey":SUPA_KEY, "Authorization":"Bearer "+SUPA_KEY } });
+    if(r.ok) rows = await r.json();
+  }catch(e){}
+  if(rows && rows[0] && Array.isArray(rows[0].data)){
+    COURSE = rows[0].data;
+    $("bank-note").textContent = "Editing the live question bank (last saved "+new Date(rows[0].updated_at).toLocaleString()+"). Changes go live for students on their next page load.";
+  } else {
+    COURSE = null;
+    $("bank-note").textContent = "No course in the database yet — the app is serving its built-in copy. Ask Claude to seed it, then reload.";
+  }
+  renderEditor();
+}
+function renderEditor(){
+  const host = $("editor");
+  if(!COURSE){ host.innerHTML = ""; $("savebtn").disabled = true; return; }
+  $("savebtn").disabled = false;
+  host.innerHTML = "";
+  COURSE.forEach((unit, ui)=>{
+    const d = document.createElement("details");
+    d.className = "unit";
+    const lessonsHtml = unit.lessons.map((les, li)=>{
+      const qs = les.questions.map((q, qi)=>qCard(ui, li, qi, q)).join("");
+      return '<details class="lesson"><summary>'+esc(les.name)+' · '+les.questions.length+' questions</summary>'+
+        qs+'<button class="btn btn-ghost" style="margin:4px 0 8px" onclick="addQ('+ui+','+li+')">+ Add question</button></details>';
+    }).join("");
+    d.innerHTML = '<summary><span class="chev">▶</span><span class="swatch" style="background:'+esc(unit.color)+'"></span>'+
+      esc(unit.title)+' <span class="muted" style="font-weight:700">· '+unit.lessons.length+' lessons</span></summary>'+lessonsHtml;
+    host.appendChild(d);
+  });
+}
+function qCard(ui, li, qi, q){
+  const base = 'data-ui="'+ui+'" data-li="'+li+'" data-qi="'+qi+'"';
+  return '<div class="qcard" '+base+'>'+
+    '<textarea oninput="upd(this,\'q\')" rows="2">'+esc(q.q)+'</textarea>'+
+    q.choices.map((c,ci)=>
+      '<div class="choice-row"><input type="radio" name="ans-'+ui+'-'+li+'-'+qi+'" '+(q.answer===ci?"checked":"")+
+      ' onchange="updAns(this,'+ci+')" title="Correct answer">'+
+      '<input type="text" value="'+esc(c).replace(/"/g,"&quot;")+'" oninput="updChoice(this,'+ci+')"></div>').join("")+
+    '<div class="choice-row why"><input type="text" placeholder="Why (explanation shown after answering)" value="'+esc(q.why||"").replace(/"/g,"&quot;")+'" oninput="upd(this,\'why\')" style="flex:1"></div>'+
+    '<div class="row-end"><span class="muted" style="font-size:12px">radio = correct answer</span>'+
+    '<button class="del" onclick="delQ(this)">Delete question</button></div></div>';
+}
+function ref(el){
+  const card = el.closest(".qcard");
+  return COURSE[+card.dataset.ui].lessons[+card.dataset.li].questions[+card.dataset.qi];
+}
+function upd(el, key){ ref(el)[key] = el.value; }
+function updChoice(el, ci){ ref(el).choices[ci] = el.value; }
+function updAns(el, ci){ ref(el).answer = ci; }
+function addQ(ui, li){
+  COURSE[ui].lessons[li].questions.push({ q:"New question…", choices:["","","",""], answer:0, why:"" });
+  renderEditor();
+}
+function delQ(el){
+  const card = el.closest(".qcard");
+  const les = COURSE[+card.dataset.ui].lessons[+card.dataset.li];
+  if(les.questions.length <= 1){ alert("A lesson needs at least one question."); return; }
+  if(!confirm("Delete this question?")) return;
+  les.questions.splice(+card.dataset.qi, 1);
+  renderEditor();
+}
+async function saveCourse(){
+  if(!COURSE || !CRED) return;
+  for(const u of COURSE) for(const l of u.lessons) for(const q of l.questions){
+    if(!q.q.trim() || q.choices.some(c=>!String(c).trim())){
+      $("savemsg").className = "save-msg err";
+      $("savemsg").textContent = "Fix empty question/choice fields first (in “"+l.name+"”).";
+      return;
+    }
+  }
+  $("savebtn").disabled = true;
+  $("savemsg").className = "save-msg"; $("savemsg").textContent = "Saving…";
+  try{
+    await rpc("admin_save_course", { u:CRED.u, p:CRED.p, c:COURSE });
+    $("savemsg").className = "save-msg ok";
+    $("savemsg").textContent = "Saved — live for students on their next page load.";
+  }catch(e){
+    $("savemsg").className = "save-msg err";
+    $("savemsg").textContent = "Save failed: "+e.message;
+  }
+  $("savebtn").disabled = false;
+}
+
+/* ── boot ── */
+try{
+  const saved = JSON.parse(sessionStorage.getItem("cs106admin") || "null");
+  if(saved && saved.u){ CRED = saved;
+    rpc("admin_stats", CRED).then(()=>{
+      $("gate").hidden = true; $("app").hidden = false;
+      startPolling(); loadCourse();
+    }).catch(()=>{ CRED=null; sessionStorage.removeItem("cs106admin"); });
+  }
+}catch(e){}
+</script>
+</body>
+</html>
