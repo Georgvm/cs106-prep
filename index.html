@@ -3935,22 +3935,26 @@ function syncUser(u){
   }).then(r => r.ok ? r.json() : null).catch(()=>null);
 }
 let pushTimer = null;
+function pushNow(){
+  clearTimeout(pushTimer); pushTimer = null;
+  if(!SUPA_URL || !SUPA_KEY || !S.user) return;
+  try{
+    fetch(SUPA_URL+"/rest/v1/rpc/save_state", {
+      method:"POST", keepalive:true,
+      headers:{ "apikey":SUPA_KEY, "Authorization":"Bearer "+SUPA_KEY,
+                "Content-Type":"application/json" },
+      body: JSON.stringify({ p_email:S.user.email, p_nick:S.user.nick,
+        p_state:{ done:S.done, gems:S.gems, missed:S.missed } })
+    }).catch(()=>{});
+  }catch(e){}
+}
 function pushState(){
   if(!SUPA_URL || !SUPA_KEY || !S.user) return;
   clearTimeout(pushTimer);
-  pushTimer = setTimeout(()=>{
-    if(!S.user) return;
-    try{
-      fetch(SUPA_URL+"/rest/v1/rpc/save_state", {
-        method:"POST", keepalive:true,
-        headers:{ "apikey":SUPA_KEY, "Authorization":"Bearer "+SUPA_KEY,
-                  "Content-Type":"application/json" },
-        body: JSON.stringify({ p_email:S.user.email, p_nick:S.user.nick,
-          p_state:{ done:S.done, gems:S.gems, missed:S.missed } })
-      }).catch(()=>{});
-    }catch(e){}
-  }, 1200);
+  pushTimer = setTimeout(pushNow, 1200);
 }
+// don't lose a pending sync when the tab closes or reloads
+addEventListener("pagehide", ()=>{ if(pushTimer) pushNow(); });
 
 
 /* ============ STATE ============ */
@@ -4216,7 +4220,8 @@ function editNick(e){
   const nick = v.trim().slice(0, 20);
   if(nick.length < 2){ alert("Your name needs at least 2 characters."); return; }
   S.user.nick = nick;
-  save();  // pushState also updates the name on the server
+  save();
+  pushNow();  // renames sync immediately — no debounce window to lose
   track("nick_change", { nick });
   renderAll();
 }
