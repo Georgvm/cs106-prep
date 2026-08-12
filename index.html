@@ -2176,11 +2176,12 @@ function track(event, props){
 function registerUser(u){
   if(!SUPA_URL || !SUPA_KEY) return;
   try{
-    fetch(SUPA_URL+"/rest/v1/app_users?on_conflict=email", {
+    // plain insert: a duplicate email answers 409, which we ignore —
+    // the RLS insert-only policy rejects PostgREST's upsert path
+    fetch(SUPA_URL+"/rest/v1/app_users", {
       method:"POST", keepalive:true,
       headers:{ "apikey":SUPA_KEY, "Authorization":"Bearer "+SUPA_KEY,
-                "Content-Type":"application/json",
-                "Prefer":"return=minimal,resolution=ignore-duplicates" },
+                "Content-Type":"application/json", "Prefer":"return=minimal" },
       body: JSON.stringify({ nick:u.nick, email:u.email })
     }).catch(()=>{});
   }catch(e){}
