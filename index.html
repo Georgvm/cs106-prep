@@ -4056,18 +4056,25 @@ const ICONS = {
 /* ============ RENDER ============ */
 function renderAll(){ renderStats(); renderPath(); renderPractice(); renderProfile(); updateBadges(); }
 
+// Countdown to the exam: "2d 7h" until the last day, then "7h 32m"
+function examCountdown(){
+  const ms = new Date(EXAM.date) - new Date();
+  if(ms <= 0) return "now!";
+  const mins = Math.floor(ms / 60000);
+  const d = Math.floor(mins / 1440), h = Math.floor((mins % 1440) / 60), m = mins % 60;
+  return d >= 1 ? d+"d "+h+"h" : h+"h "+m+"m";
+}
 function renderStats(){
-  const days = Math.max(0, Math.ceil((new Date(EXAM.date) - new Date()) / 864e5));
-  const dayTxt = days===0 ? "today!" : days===1 ? "tomorrow" : "in "+days+" days";
+  const left = examCountdown();
   $("topbar").innerHTML =
     '<div><div class="hi">'+(S.user ? "Hi, "+esc(S.user.nick)+"! 👋" : "CS106 Prep")+'</div>'+
-    '<div class="when">'+esc(EXAM.name)+' — <strong>'+dayTxt+'</strong> · Fri 12:00 PM</div></div>'+
+    '<div class="when">'+esc(EXAM.name)+' — <strong>'+(left==="now!"?"now!":"in "+left)+'</strong> · Fri 12:00 PM</div></div>'+
     '<div class="gem-chip" title="Diamonds — one per correct answer">'+ICONS.gem+' '+S.gems+'</div>';
   const done = doneLessons(), total = totalLessons();
   const pct = total ? Math.round(done/total*100) : 0;
   $("rail-exam").innerHTML =
     '<h3>'+esc(EXAM.name)+'</h3><p>'+esc(EXAM.when)+'</p>'+
-    '<p class="countdown" style="margin-top:6px">'+days+' day'+(days===1?"":"s")+' left</p>'+
+    '<p class="countdown" style="margin-top:6px">'+left+(left==="now!"?"":" left")+'</p>'+
     '<div class="meter"><div style="width:'+pct+'%"></div></div>'+
     '<div class="meter-cap"><span>'+done+' / '+total+' lessons</span><span>'+pct+'%</span></div>';
 }
@@ -4443,6 +4450,8 @@ document.addEventListener("keydown", e=>{
   if(e.key==="Escape") quitQuiz();
 });
 addEventListener("resize", ()=>{ if(!$("quiz").classList.contains("open")) renderPath(); });
+// keep the exam countdown fresh (it shows minutes on the last day)
+setInterval(()=>{ if(!$("quiz").classList.contains("open")) renderStats(); }, 60000);
 
 /* ============ BOOT ============ */
 track("page_view", { signed_in: !!S.user });
