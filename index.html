@@ -143,7 +143,9 @@
   .nav-item.active{color:var(--blue); background:var(--blue-soft); border-color:var(--blue)}
   .nav-item .badge{
     margin-left:auto; background:var(--red); color:#fff; border-radius:99px;
-    font-size:11px; min-width:20px; height:20px; display:grid; place-items:center; padding:0 5px;
+    font-size:11px; font-weight:800; letter-spacing:0; line-height:1;
+    min-width:20px; height:20px; padding:0 5px;
+    display:flex; align-items:center; justify-content:center; text-align:center;
   }
 
   .main{flex:1; min-width:0; padding:20px 16px 100px}
@@ -240,11 +242,16 @@
   .bottomnav .nav-item svg{width:30px; height:30px}
   .bottomnav .nav-item .badge{position:absolute; top:2px; right:8px; margin:0}
 
+  .credit{
+    position:fixed; right:16px; bottom:12px; z-index:5; pointer-events:none;
+    font-size:12.5px; font-weight:700; color:var(--ink-faint);
+  }
   @media (max-width: 920px){ .rail{display:none} }
   @media (max-width: 700px){
     .side{display:none}
     .bottomnav{display:flex}
     .main{padding:12px 12px 100px}
+    .credit{display:none}
   }
   @media (max-width: 380px){ .node-row{--amp:48px} }
 
@@ -451,6 +458,8 @@
     </div>
   </aside>
 </div>
+
+<div class="credit">Made at Stanford 🌲 by Georg von Manstein</div>
 
 <nav class="bottomnav" aria-label="Main">
   <button class="nav-item active" data-tab="learn" onclick="showTab('learn')" aria-label="Learn">
